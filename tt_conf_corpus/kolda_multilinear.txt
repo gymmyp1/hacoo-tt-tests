@@ -1,0 +1,1560 @@
+SANDIA REPORT
+
+SAND2006-2081
+Unclassified Unlimited Release
+Printed April 2006
+
+Multilinear operators for higher-order
+decompositions
+
+Tamara G. Kolda
+
+Prepared by
+Sandia National Laboratories
+Albuquerque, New Mexico 87185 and Livermore, California 94550
+
+Sandia is a multiprogram laboratory operated by Sandia Corporation,
+a Lockheed Martin Company, for the United States Department of Energy's
+National Nuclear Security Administration under Contract DE-AC04-94-AL85000.
+
+Approved for public release; further dissemination unlimited.
+
+(fh) Sandia National Laboratories
+Issued by Sandia National Laboratories, operated for the United States Department of
+Energy by Sandia Corporation.
+
+NOTICE: This report was prepared as an account of work sponsored by an agency of
+the United States Government. Neither the United States Government, nor any agency
+thereof, nor any of their employees, nor any of their contractors, subcontractors, or their
+employees, make any warranty, express or implied, or assume any legal liability or re-
+sponsibility for the accuracy, completeness, or usefulness of any information, appara-
+tus, product, or process disclosed, or represent that its use would not infringe privately
+owned rights. Reference herein to any specific commercial product, process, or service
+by trade name, trademark, manufacturer, or otherwise, does not necessarily constitute
+or imply its endorsement, recommendation, or favoring by the United States Govern-
+ment, any agency thereof, or any of their contractors or subcontractors. The views and
+opinions expressed herein do not necessarily state or reflect those of the United States
+Government, any agency thereof, or any of their contractors.
+
+Printed in the United States of America. This report has been reproduced directly from
+the best available copy.
+
+Available to DOE and DOE contractors from
+U.S. Department of Energy
+
+Office of Scientific and Technical Information
+P.O. Box 62
+Oak Ridge, TN 37831
+
+Telephone: (865) 576-8401
+Facsimile: (865) 576-5728
+E-Mail: reports@adonis.osti.gov
+
+Online ordering: http://www.doe.gov/bridge
+
+Available to the public from
+U.S. Department of Commerce
+National Technical Information Service
+5285 Port Royal Rd
+Springfield, VA 22161
+
+Telephone: (800) 553-6847
+Facsimile: (703) 605-6900
+E-Mail: orders@ntis.fedworld.gov
+
+Online ordering: http://www.ntis.gov/ordering.htm
+
+ 
+SAND 2006-2081
+Unclassified Unlimited Release
+Printed April 2006
+
+Multilinear operators for higher-order
+decompositions
+
+Tamara G. Kolda
+Computational Science and Mathematics Science Research Department
+Sandia National Laboratories
+Livermore, CA 94551-9159
+tgkolda@sandia.gov
+
+Abstract
+
+We propose two new multilinear operators for expressing the matrix compositions that are
+needed in the Tucker and PARAFAC (CANDECOMP) decompositions. The first operator,
+which we call the Tucker operator, is shorthand for performing an n-mode matrix multiplica-
+tion for every mode of a given tensor and can be employed to consisely express the Tucker
+decomposition. The second operator, which we call the Kruskal operator, is shorthand for the
+sum of the outer-products of the columns of N matrices and allows a divorce from a matricized
+representation and a very consise expression of the PARAFAC decomposition. We explore the
+properties of the Tucker and Kruskal operators independently of the related decompositions.
+Additionally, we provide a review of the matrix and tensor operations that are frequently used
+in the context of tensor decompositions.
+Contents
+
+1 Introduction... 0. eee en eee een e eee eee eee nee
+2 Notation... eee enn eee en eee nen E nen es
+3 Review of standard operations 0.0... eee eee eee ene ee ene enone
+3.1 Matrix operations 1.0... 6c ccc ee eee eee
+3.2 The outer product of vectors... 6 cece eee ene
+3.3 Tensor multiplication: the n-mode product ... 0.0.0... eee cc eee
+3.4 Matricization of a tensor... cc cee cece ee ene
+3.5 Norm and inner product of a tensor... 6... ec eee eee
+4 The Tucker operator 2.0... ee eee ener n eet teen e beeen eee
+4.1 Definition of the Tucker operator 2.0... cee ce eee eens
+4.2 Tucker operator properties .. 0... nee eect eee e ee eeee
+4.3 The Tucker decomposition .... 0.0... ccc ec eect e ene
+4.4 Finding an optimal rank-(J,, J2,..., Jy) approximation ...................0000.
+4.5 Derivatives... cc ee ee teen ee ene
+5 The Kruskal operator ..... 0.0 eee ee ee rene bene n ene nen eae
+5.1 Definition of the Kruskal operator... 0... eee
+5.2 Kruskal operator properties 2.0... 0. ee ee eens
+5.38 The PARAFAC decomposition 0.0.0.0... cece eee een ence
+5.4 Computing the PARAFAC decomposition .... 00... 0 eee eee ence ence
+5.5 Derivatives of the Kruskal operator 2.0... 0. eee eee
+6 Conclusions... een eee Ene EE EEE enone eae
+References... ee EEE CEE EEE Ee EE eee EEE Een eS
+Appendix
+A. TATBX formatting 0.000. .o nen enn nnn Ene eee bebe eee Eee
+Figures
+1 Three-way tensors. 6... eee ence nen ee eee eee eee
+2 Fibers of a 3rd-order tensor. ... 0. ce eee eee ee eens
+3 Slices of a 3rd-order tensor... 6... cece eee ene
+4 Illustration of mode-1 matricization—the column fibers are aligned to form a matrix.
+5 Illustration of the Tucker decomposition: X = [G;A,B,C] .....................
+6 Illustration of the PARAFAC decomposition: X = [A,B,C] .................0..
+
+Algorithms
+
+1 Tucker: Higher Order Orthogonal Iteration... 1.0.0... eee ae
+2  PARAFAC: Alternating Least Squares (ALS) ............ 0.0000 e cece eee eee
+Multilinear operators for higher-order
+decompositions
+
+1 Introduction
+
+Higher-order tensor decompositions are in frequent use today in a variety of fields including psycho-
+metrics [43, 12, 19], chemometrics [6, 37], image analysis [45, 36, 46], graph analysis [27, 26], signal
+processing [13, 33], and much more [1, 38, 32]. The two most commonly used decompositions are
+Tucker [43] and PARAFAC (also known as CANDECOMP) [12, 19], which can be thought of as
+higher-order generalizations of the matrix singular value decomposition.
+
+Unfortunately, the notation for these decompositions is not standardized because there are no
+operators to denote the multilinear compositions of matrices that are needed. Kiers [24], Harshman
+[20], and Bader and Kolda [8] have provided guidance on general notation for higher-order operations
+but did not focus on notation for higher-order decompositions. Typically, these decompositions
+are written in terms of elementary tensor operations (like n-mode multiplication) or by using a
+matricized representation. The difficulty is that this notation is non-intuitive and obscures the
+multilinear properties of the underlying operations.
+
+To remedy this problem, we propose two new operators: a Tucker operator, which denotes a series
+of n-mode multiplication operations, and a Kruskal operator, which is a special case of the Tucker
+operator and useful for the PARAFAC decomposition. In this paper, we define these operators,
+examine their properties, and demonstrate how their use enables a better understanding of the
+Tucker and PARAFAC decompositions.
+
+For example, the Tucker operator simplifies the notation for the Tucker decomposition. Let
+X € R!*J** be a third-order tensor. It will turn out that
+Rs T
+X = [S ; A,B,C] replaces Lijk = Ss So gest tir dj sChet-
+r=1s=1t=1
+The third-order tensor G € R®***T is called the core array, and the matrices A € R!*®, B € RY*9,
+
+and © € R**T are called the factors. Likewise, the Kruskal operator simplifies expression of the
+PARAFAC decomposition. Here it turns out that
+
+R
+X = [A,B,C] replaces Lijk = So dirdjrchr-
+r=L
+
+In the PARAFAC case, there is no core array, only the factor matrices A € R/*”, B € RY**,
+and C € R**, which are now constrained to have equal numbers of columns. Kruskal proposed
+identical PARAFAC notation with the exception of the type of bracket; he used [A, B, C] [29].
+
+The paper is organized as follows. Notation for n-way arrays can be complex, so we explain ours
+in §2. We review standard matrix and tensor operations and their properties in 83. The Tucker
+operator is covered in §4 and the Kruskal operator in $5. Lesser-known E*TeX formatting commands
+that are necessary to reproduce the symbols in this paper are provided in the appendix.
+
+2 Notation
+
+Multiway arrays (a.k.a. tensors) are denoted by boldface Euler script letters, e.g., X. The order
+of a tensor is the number of dimensions, also known as ways or modes. Figure 1{a) illustrates a
+three-way tensor. We use J to denote the identity tensor with ones on the superdiagonal and zeros
+elsewhere; see Figure 1(b).
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+th.
+- Ma
+H ao
+: Ley
+: a.
+* L
+ye
+g=1,..., nae
+(a) Xe RXIxh (b) JE RIXIx?
+
+Figure 1. Three-way tensors.
+
+Matrices are denoted by boldface capital letters, e.g., A. We use I to denote the identity matrix.
+Vectors are denoted by boldface lowercase letters, e.g., a. Scalars are denoted by lowercase letters,
+e.g., a. We have attempted to keep this notation consistent. Thus, the ith entry of a vector a is
+denoted by a;, the jth column of A is denoted by a,;, the ith row by a,., element (i,j) by aij, and
+element (i,j,k) element of a 3-way tensor X is denoted by 2ijx.
+
+The higher order analogue of matrix rows and columns are called fibers. A matrix column is a
+mode-1 fiber and a matrix row is a mode-2 fiber. For a third order tensor, we have column, row,
+and tube fibers, which are denoted by x.j7, Xi.z, and xj;,, respectively; see Figure 2. For orders
+higher than three, the fibers no longer have special names. We always assume that fibers are column
+vectors.
+
+ 
+
+(a) Columns: x.j;% (b) Rows: Xi:% (c}) Tubes: xj;
+
+Figure 2. Fibers of a 3rd-order tensor.
+
+For third-order tensors, it is often useful to consider the two-dimensional slices. Figure 3 shows
+the horizontal, lateral, and frontal slides of a third-order tensor X, denoted by X;;,, X.;,, and X..,,
+respectively.
+
+Finally, indices typically range from 1 to their capital version, e.g.,7 = 1,...,7. Multiple indices
+have subscripts, e.g., i, = 1,...,J,. Sets are denoted in calligraphic font, e.g., R = {ri,r2,..., rp}.
+We denote a set of indexed indices by Ip = {Ip,,Ip.,..-,1rp}-
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+= tt) J
+
+(a) Horizontal: X;.; (b) Lateral: X.;, (c) Frontal: X..,
+
+ 
+
+ 
+
+ 
+
+Figure 3. Slices of a 3rd-order tensor.
+
+3 Review of standard operations
+
+We present a comprehensive survey of standard operations and concepts that are used in multiway
+analysis.
+
+3.1 Matrix operations
+The Kronecker product (also sometimes known as the tensor product), Khatri-Rao product, and
+Hadamard product are matrix operations that we use in this paper.
+
+The Kronecker product of matrices A ¢€ R!*/ and B € R**# is denoted by A @ B and the
+(IK) x (JL) result is defined by
+
+auB a2B --- a 7B
+
+a2Bo a2B --- a7B
+A@B= . . . .
+
+anB apoB -:-- aryB
+
+Certain of its properties (listed in Proposition 3.1) will prove useful in our discussions. Van Loan
+[44] provides a more general overview of the Kronecker product and its uses.
+
+Proposition 3.1 (Kronecker product [44]) Let A € R/*/,B Ee R***, Then
+
+(a) (A @B)(C @D) = AC @BD, and
+(b) (A @B)'=Al @Bi.
+
+The Khatri-Rao product [31, 35, 10, 37] is the columnwise Kronecker product. The Khatri-Rao
+product of matrices A ¢ R/** and B € R’** is denoted by A@B and its (IJ) x K result is defined
+by
+
+AOB= [ai @ba az@b2 +: ax @b.x].
+
+We will see later that the Khatri-Rao product is very important for expressing the PARAFAC
+decomposition. Observe that the matrices in a Khatri-Rao product all have the same number of
+columns. Furthermore, if a and b are vectors, then the Khatri-Rao and Kronecker products are
+identical, ie., a@b—=a@b. The Khatri-Rao product has properties that involve the Hadamard
+product, which is the elementwise matrix product; i.e., the Hadamard product of matrices A and B,
+both of size I x J, is denoted by A *« B and its J x J result is defined by
+
+abi. Gigbig ++) aids
+
+@21b21  dggba2 +++ darbay
+Ax*xB= .
+
+lanbr arabra ++ arsbrs|
+
+In particular, the pseudo-inverse of a Khatri-Rao product has a special form that involves the
+Hadamard product.
+
+Proposition 3.2 (Khatri-Rao product [37]) Let Ac R/**, Be RY*4, CE R*®**, Then
+
+(a) AOBOC=(AOB)OC=AO(BOC),
+(b) (A@B)(A OB) = ATA«B'B, and
+(c) (A@B)i = (ATA) « (BTB))' (A @B).
+
+3.2. The outer product of vectors
+
+The outer product of two vectors yields a matrix and is typically written as X — ab’. To extend
+the outer product to higher dimensions, we cannot reply solely on the transpose operator; instead,
+we use the symbol o to denote the outer product, so we write X = ao b for the outer product of
+two vectors. Let N= {1,...,N} and al) © R! for alln EN. Then the outer product of these NV
+vectors is an Nth-order tensor and defined elementwise as
+
+(a oa®o-..0 a\’)) = aia is a AN iy for] <in <Ip,n EN.
+
+iyig--in
+Sometimes the notation @ is used (see, e.g., [25]), but we reserve that notation in this paper for the
+matrix Kronecker product.
+
+3.3 Tensor multiplication: the n-mode product
+
+The n-mode product [14] defines multiplication of a tensor by a matrix in mode n. Though other
+types of tensor multiplication exist, see, e.g., [8], we only need to consider the n-mode product in
+this paper.
+
+The n-mode (matrix) product of a tensor Y ¢ R1* 2%" *J» with a matrix A € R!*/> is denoted
+by ¥ x, A. The result is of size J) x--- X Jn-1 X TX Inti X +--+ X Jy and is defined elementwise as
+
+Jn
+(Xn A)js je aiferrin = dy Vinientn Vij:
+jn=1
+
+There are many ways of considering n-mode multiplication. For example, let Y € R/*/**,
+B € R’*/, and X = Y x2 B. One interpretation is that each mode-2 fiber of X is the result of
+multiplying the corresponding mode-2 fiber of Y by B:
+
+Xik = By;., for eachi=1,...,/,k =1,...,K.
+
+Example 3.3 (n-mode matrix product) Let Y be the following 3 x 4 x 2 tensor:
+
+14 7 10 13 16 19 22
+Yu=|2 5 8 1], Ywe=]14 17 20 23]. (1)
+3.6 9 12 15 18 21 24
+Let A be the following 2 x 3 matriz:
+
+|
+
+A=|j 5 6 @)
+
+Note that the number of columns in A is equal to the size of mode 1 of Y. Thus we can compute
+Y x,A, which is of size2x4x 2 and
+
+22 49 76 103 130 157 184 211
+(x1 A) = log 64 100 isa (9x Ade = | it9 208 244 280] °
+
+Proposition 3.4 (n-mode matrix product [14]) Let Ye R1* 2%" *4" be an N-way tensor.
+
+(a) Given matrices A € R'm*Jm Be Rin Xd,
+Y xm A Xn B=(Y Xm A) X,nB=(Yx%,B) Xn A (mn).
+(b) Given matrices Ac RIX», BERE*!,
+Yx,AXnB=Y Xp (BA).
+
+(c) Moreover, if A € R'*7" with full column rank, then
+
+X=YxnA > Y=Xx,Al,
+(d) Consequently, if A ¢ R'*/™ is orthonormal, then
+
+X=Yx,A > Y=Xx, Al.
+
+Example 3.5 Here we illustrate Proposition 3.4(d). Let Y be given by (1). Define the orthonormal
+matriz
+
+0.58 0.00
+C= 10.58 —0.71
+0.58 0.71
+
+Then X =Y x3 C is
+
+0.58 2.31 4.04 5.77
+Xi = 11.15 2.89 4.62 6.35],
+1.73 3.46 5.20 6.93
+
+—8.62 —9.00 —9.39 —9.78
+Xuo = |-8.74 -913 -9.52 —9.91 | ,
+—8.87 —9.26 -—9.65 —10.04
+| 9-77 13.62 17.48 21.33)
+
+X.3 = 711.05 14.91 18.76 22.61).
+|12.34 16.19 20.05 23.90
+
+We have then that Z=X x3 C! is
+
+1 4 7 10 13 16 19 22
+Zai-|2 5 8 Wl, Zio=ll4 17 20 23
+3.69 12 15 18 21 24
+
+In other words, we have recovered the original Y.
+3.4. Matricization of a tensor
+
+Especially in computations, it is important to be able to transform the indicies of a tensor so that it
+can be represented as a matrix, and vice versa [8]. In order to fully capture all the salient information,
+we need to explicitly track three pieces of information in addition to the data itself: the size of the
+tensor, the modes that are mapped to the rows of the matrix, and the modes that are mapped to
+the columns of the matrix.
+
+The matricization of a tensor X € R1*/2*-*!Ny ig defined as follows. Let the ordered sets
+R={ri,...,rz} and C = {e1,..., car} be a partitioning of the modes N = {1,...,N}. Recall that
+Ix denotes the size of the tensor: {1),...,/N}. The matricized tensor can then be specified by
+
+Xirxe:ty) €R’** with J=][[ I, and K=][ hn.
+nER nee
+
+The indices in ® are mapped to the rows and the indices in C mapped to the columns. Specifically,
+
+(Xexxe:ty)) jp = Pini in
+with
+M
+
+m=1
+
+L
+j=1+ >
+é=1
+
+ 
+
+é-1
+(ir, -1) ][ | and k=1+
+&=1
+
+ 
+
+(i; —1) Ul hol
+
+mal
+
+It may be easier to understand matriticization in MATLAB notation. Suppose X is a multidi-
+mensional array, and let the sets R and C be defined. Then the following code converts to a matrix
+and back again to a tensor.
+
+ 
+
+= rand(5,6,4,2); R = [2 3]; c= [4 1];
+
+= size(X); J = prod(I(R)); K = prod(I(C));
+
+reshape (permute(X,[R C]),J,K); % convert X to matrix Y
+
+= ipermute(reshape(Y, [I(R) I(C)]),[R C]); % convert back to tensor
+
+N << Hop
+Il
+
+ 
+
+ 
+
+ 
+
+Note that we must explicitly recall the sizes of the original tensor dimensions in order to convert
+the matrix back to a tensor. This is generally not called out explicitly in notation. For example, if
+R= {1,2} and € = {3,..., N}, then XRxe:7,) is more typically written as
+
+XARxIsla In op X(t Ip xIgls- In)
+In other words, the size of the original tensor is generally treated implicitly. However, we will see
+
+that explicitly listing the sizes (i.e., the argument following the colon) proves useful in certain cases
+such as Proposition 3.7(b) and Proposition 3.7(d).
+
+An important special case is whenever ® is a singleton. This means that the fibers of mode
+n are aligned as the columns of the resulting matrix. The n-mode matricization of a tensor X €
+Ri*x-*In is a special case of matricization given by
+
+Xen) = Xrxe: ty) with R= {n} and C= {1,...,.2-1,n+1,...,N}.
+Here we adhere to the standard notation. See also the illustration in Figure 4.
+
+In general, the order of the modes within © is irrelevant so long as all operations with the
+transformed modes are consistent. Different authors use different orderings for the columns of the
+resulting matrix; see, e.g., [14] versus [24].
+
+10
+ 
+
+Xu
+
+Figure 4. [lustration of mode-1 matricization—the column fibers are
+aligned to form a matrix.
+
+In addition to converting a tensor to a matrix, it can also be converted to a vector, which is just
+
+a special case of matricization where all the modes become row modes; i.e., the vectorized tensor
+XE Rn*hx*In ig given by
+vec(X) = XN xO: Ey)
+
+Example 3.6 (Matricization) Let Y be given by (1). Then
+
+1 4 7 10
+13 16 19 22
+2 5 8 II
+Y (13,1) {2}: (3.4.2) = 14 17 20 23]°
+3 6 9 12
+lis 1s 21 24|
+
+1 4 7 10 13 16 19 22
+Yay = Yoq1y x {2,3} : {3,4,2}) = }2 5 8 11 14 17 20 23 ’
+3°96 9 12 15 18 21 24
+
+and
+
+t
+vec(Y) = Yonxo:m) = [1 Q +. 24] .
+
+Converting a tensor to a matrix in useful both computationally and theoretically because there
+are useful connections between the n-mode matrix product, matricization, and Kronecker products.
+
+Proposition 3.7 Let Ye R1*2*"*IN and N=1,...,N.
+
+a) If Ac R*/", Then
+(a)
+X=Yx,A <= Xin) = AY (n).
+
+(b) Let A™ ER”*In for alln EN. If R={r1,...,77} and C = {e1,...,ea} partition N, then
+X=Yx, AY x, AM... xy AN ©
+X(Rxe: In) = (ae @---@ A‘) Y(Rrxe: Ix) (ai @--- oat)"
+(c) Consequently, if AM ERX for alln EN, for any specificn CN we have
+X=Yx, AY x, AM... xy AN ©
+
++
+Xin) = AMY (n) (av a: GAM EAT @...@ A”) ;
+
+11
+(d) Moreover, if © = {e1,...,cm} CN and AM ER”*4 forn € ©, defining R=N\€C yields
+
+X=Yx,, AM x, AL)... x., ALM 2
+
+In ifnee
+
+T
+X(Rxe: Ky) = Y(Rxe: En) (Ame @A) with Ky = { ifneR
+
+3.5 Norm and inner product of a tensor
+
+The norm and inner product are most easily thought of in terms of the vectorized tensor. The inner
+product of two tensors X,Y € R2*2* x!» is given by
+
+hla Iy
+(X,Y) = vec(X)"vec(Y) = S- S- ee S- Dizig-in Yizin-in +
+=li=l iy=l
+
+The norm of a tensor X € R42 *22*-*Iy ig given by
+
+; IL Ip In
+CN = (XX) = ST SS thay:
+ij=lig=l in=l
+
+The norm of a tensor can be transformed to a matrix or vector norm by using the matricized or
+vectorized version of the tensor (Proposition 3.8). Moreover, the norm of the difference of two tensors
+can be rewritten to instead involve the inner product of the two tensors (Proposition 3.9). The inner
+product of two rank-1 tensors can be simplified to be the product of the individual dot products of
+the components (Proposition 3.10). Finally, Mode-n multiplication commutes with respect to the
+inner product (Proposition 3.11).
+
+Proposition 3.8 Let X ¢R2*2%*"*!n and N = {1,...,N}.
+
+(a) Let sets R and € be a partitioning of N. Then ||X || = || Xcrxe.1y) |p
+(b) Let n EN. Then ||X || = || Xen) || p-
+(c) |X|] = |] vec(X) |Ip -
+
+Proposition 3.9 Let X,Y ¢ Rn*2* In, Then
+xy IP = Xj? —20-K,¥) — WYP.
+
+Proposition 3.10 Let X,Y e R2*2*—*In with X = a) oa@o---oa and Y = bY ob® o
+
+---ob). Then
+N
+
+(X,Y) = [[(a?. ev ).
+
+n=1
+Proposition 3.11 Let X € Ra% 0 %ln-1* dx Inga xe xin oY E REX Xn ax Kx Inga x xIN | and AE
+
+R’**. Then
+(X,Y x,A)=(Xx, ATY).
+
+An interesting corollary of the previous result is that mode-n multiplication of a tensor with an
+orthogonal matrix does not change its norm.
+
+Proposition 3.12 Let X ¢ R'*2%"*In and let Q be a J Xx Ip orthonormal matrix. Then
+
+|X|] = |X xn QI.
+
+12
+4 The Tucker operator
+
+Now that we have reviewed essential matrix and tensor operations, we can proceed to defining our
+multilinear operators. In this section, we consider the Tucker operator and its application to the
+Tucker decomposition.
+
+4.1 Definition of the Tucker operator
+
+The Tucker operator is an efficient representation for multi-mode multiplication, which we formally
+define as follows.
+
+Definition 4.1 Let Y ¢ R4*22%"*4~ and N = {1,...,N}. Suppose we have matrices A™ €
+R*J= forn EN. Then the Tucker operator is defined as:
+
+TY AM, AG. AN] Sy x, AM x, AC)... xy AO), (3)
+The result is of size I, xX Ip X-+-+x In.
+
+The Tucker operator can be defined on a subset of modes {k,,...,kp} C N via a subscript on
+the operator as follows:
+
+TY AS) AC) ACP py SY Xe, ABD xp, AM) xg, AMP),
+
+Grigorascu and Regalia [18] have proposed notation for the same concept as the Tucker operator,
+
+AD ZAP... ZA,
+which they refer to as the weighted Tucker product {the unweighted version has Y = J, the identity
+
+tensor). Note that the case of using only a subset of modes is equivalent to replacing the missing
+modes with J, x J, identity matrices.
+
+4.2. Tucker operator properties
+
+The properties of the Tucker operator follow directly from the properties of n-mode multiplication
+
+(see §3.3).
+
+Proposition 4.2 Let Ye R1*2* x4» and let N= {1,...,N}.
+
+(a) Given matrices A € Rn%J>, B®) EREn%n for alln EN, we have
+IV -AW ... AM] ‘BO... BO] =[Y BOAM ... BY AMY]
+(b) Given matrices A™ € R'*4n for alln EN with full column rank, we have
+X= [Y:A®,-.. AM) Ss y= pr aM... Any
+(c) Given orthonormal matrices A™ ¢ RI*Jm for alln EN, we have
+
+X=[Y;AM,.-- AN] s y= pe; AMT... AQT]
+
+13
+Proof. Part (a) follows from the definition of the Tucker operator and the properties of mode-
+n multiplication (Proposition 3.4(b)). Likewise, Parts (b) and (c) follow from other properties of
+mode-n multiplication (Proposition 3.4(c) and Proposition 3.4({d), respectively). O
+
+The Tucker operator also has various expressions in terms of matricized tensors and the Kronecker
+product.
+
+Proposition 4.3 Let Ye R1*2*"*In and N=1,...,N.
+(a) Let AM EReXJ= for alln Ee N. If R={r1,...,rp} and © = {c1,...,cy} partition N, then
+x=(y AM AQ)... AY] S
+Xx: In) = (am @---@ A) Y(Rx€: In) (ales Qe: oa)"
+(b) Consequently, if A®™ ERe*In for alln EN, for any specificn €N we have
+
+X= [YAY AQ)... AN] os
++
+Xen) = AMY (a) (ae @- @AMMEAT)...@ A”)
+
+(c) Moreover, if C = {c1,...,ea} CN and AM ERP» forn € €, defining R=N\€ yields
+
+x=[y ALD) Ales). . AO] oe es
+
+Jn ifnee
+
++
+= (ex) @... (1) ; =
+Xerxe: Ky) = YRxe: In) (a @---@A ) wth Ky = {7 ifn eR’
+
+Proof. The proof follows from the connections between the Tucker operator and n-mode mul-
+tiplication (Proposition 4.2) and the connections between n-mode multiplication and matricization
+(Proposition 3.7). Oo
+
+Results such as these help to yield insight into the properties of the Tucker operator. Consider
+the following proposition that says that the norm of a large tensor can be calculated by considering
+a much smaller tensor.
+
+Proposition 4.4 ([7]) Let Ye R11 *72%"*4™ and let N = {1,...,N}. Suppose we have matrices
+AM ERI» for alln EN. Let the QR decomposition of each matrix be denoted by
+
+AM =QMR® forn EN,
+where Q™ € R/x*Jn is orthonormal and RX ¢ RJ» */= is upper triangular. Then
+
+9A... A) =| yr... RO],
+
+Proof. From the properties of the Tucker operator (Proposition 4.2(a)), the definition of the
+Tucker operator (Definition 4.1), and the property that orthonormal matrices in n-mode multipli-
+cation do not change the norm (Proposition 3.12), respectively, we have
+
+| yx AY... AMY] | = | [ix RY... ROY] QQ] |
+= | (Ix RY... ROY) «1 QO xy QO) |
+
+_ | [X;RY,...,. RO].
+
+14
+Consequently, suppose that we have a tensor X € J, x Ig x --- x Iy such that
+X= [ly AM,..., AM].
+If Jn < In, the norm of Y is the same as the much smaller tensor 2 € J, x Jo x --- x Jy where
+
+Z=[Y¥;RY,...,R].
+
+4.3. The Tucker decomposition
+
+The Tucker decomposition [43] of a tensor X € R1*2%"'*4y is given by
+xX=[G;AY,A,..., AQ], (A)
+
+Here Af) € RIn*Jn and G € R41*%2%" *Jn If G is the same size as X, the Tucker decomposition
+is simply a change of basis. More often, we are interested in using a change of basis to compress
+X, thereby resulting in a tensor G that is smaller than X; see Figure 5. The n-rank of a tensor X
+is defined as the rank of X(,) [14]. If we let J, be the n-rank of X for each n, the we can always
+reproduce X exactly. Otherwise, the “decomposition” may not be exact but instead produce an
+approximation to the tensor.
+
+ig
+
+T
+
+Z/
+
+K Ss
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+Figure 5. [lustration of the Tucker decomposition: X = [S ; A, B, C]
+
+Tucker [43] dealt only with 3-way arrays but the basic principals have since been extended to N-
+way arrays. For the three-way case, the terms Tucker3, Tucker2, and Tucker] have been coined [28]:
+Tucker3 is the decomposition presented here with N = 3 (three modes are free), Tucker2 constrains
+one mode to be the identity matrix (so that 2 modes are free), and Tuckerl constrains two modes
+to be identity matrices (1 mode is free).
+
+In general, the Tucker decomposition is not unique. For example, let B be an orthogonal matrix
+of size J, x J,. Then, recalling Proposition 4.2(a),
+
+X= [G;A%,..., AM] = [5 x. B AMB,..., AM],
+
+Many researchers have considered the problems of rotating the core G to something that is more
+interpretable; see, e.g., [21, 22, 23, 2].
+The new Tucker operator replaces the following options for expressing the Tucker decomposition:
+e Mode-n multiplication: X = G x, AD x AQ... xy AQ)
+Matricized form: X(,) = AMG) (AM @--- @AM)D @ACDQ...Q@AN),
+J J: J L 2 N
+e Outer products: X = Dy ry hd Dinan al) ° al) O-+-0 al), or
+
+. OA Jp Jn @) (2) (2)
+Elementwise: 2j,i,-.iy = jaa Dojen 0 Dejn—i Dido dn Giz jy Ginjs 7 Ginn
+
+15
+4.4 Finding an optimal rank-(.1, Jo,...,/y) approximation
+
+Given a tensor X and a desired rank of the core tensor G, we can consider the problem of computing
+a Tucker decomposition with the least amount of error. The goal is to find the best possible Tucker
+decomposition (4) given a tensor X or, in other words, to solve
+
+min |x- 15a, a] | ©)
+G,AQ,..,AN)
+subject to Gc RINK RX XIN
+
+A™ € R™*J» orthonormal, n = 1,...,.N.
+
+We assume J, is strictly less than the n-rank of X in at least one mode — otherwise the solution is
+trivial and exact. We reformulate the problem so that G is eliminated by considering the problem
+of finding the optimal G given that all the matrices A™ are fixed. We present an alternative proof
+that explicitly uses the properties of the Tucker operator.
+
+Theorem 4.5 (Theorems 4.1 and 4.2 in [14]) Let X e R1*2x*Iy | Assuming the matrices
+A) are fixed, the optimal G for (5) is
+
+G =X; AMT... AQT (6)
+Consequently, the optimal matrices A™ for (5) are given by the solution to
+
+max esa... AMT. (7)
+AM, A) , u_
+
+Proof. From Proposition 4.3(a) with R = {1,...,N}, we can rewrite the norm in matrix form:
+
+|x - [9 :A@T,..., ACT] | = |
+
+ 
+
+vee(X) — (AM) @--- @ A) vee($) |
+This is a classic linear least squares problem, and the solution is given by
+vec(G) = (am @---@ A”) ' vec(X).
+By Proposition 3.1(b) and the fact that the matrices are orthonormal, we can conclude
+vec(G) = (AT @---@ Air) vec(X)
+
+Equation (6) follows from Proposition 4.3(a), so we assume (6) holds for the remainder of the proof.
+
+Next, from Proposition 3.9, we have
+|x IG: AM,..., AN] |
+= |X IP AX GAM... AM) + | IFAM... AO],
+From Proposition 3.11 and (6),
+(X, [G5 AM,...,AM]) = (CAM... ACT G) = |G]?
+
+From Proposition 3.12,
+
+| 15 :A%,..., AM] =I)
+
+16
+Hence,
+
+|x- 15a... A%] | =x)? - 1S P.
+It follows that minimizing (6) is equivalent to maximizing || G ||; hence, the claim. Oo
+
+Consequently, from Theorem 4.5, the minimization problem (5) can be reformulated as:
+
+| Ix: AMT ACT] | (8)
+
+maxX
+AM, AQ)
+
+subject to A” e€R*J= orthonormal yn=l,...,N.
+
+Next, we can consider the question of how to find each A‘ without making any assumptions
+about the other factors, i.e., we solve the following problem.
+
+tat
+max Jesh... .LA I,...,]] (9)
+
+subject to A™ € R&*Jn orthonormal.
+
+The objective function is equivalent to | Xx, AMT | = | AMTX a) ||. In matrix format, we can
+see that the J, leading left singular vectors of X(,) yield the optimal solution. If we solve for each
+A) for n = 1,...,N in this manner, than we have what is has been popularized as the Higher-
+Order Singular Value Decomposition (HO-SVD) [14]. Unlike its matrix counterpart, the HO-SVD
+does not yield an optimal rank-J,, Jo,...,J) approximation to X. However, it is a good starting
+point for an alternating algorithm.
+
+Consider next the problem of how to find the optimal A“ given that all the other factors are
+known and fixed, which yields the following subproblem for matrix n:
+
+max | [x AMT... ACDT] | (10)
+A nm
+subject to A™ © R'*4» orthonormal.
+
+More simply, defining 2 = [X ;AMT,..., AP YT T AC@TDT, 2. AQIT) and B= A™), the prob-
+lem becomes
+TI) = || pt
+max || & Xn B"|| = ||B'Zc || p (11)
+
+subject to B €R?**! orthonormal.
+
+The solution to this subproblem is easily realized via the matrix SVD of Zi), ie., setting the
+columns of B to be the J, leading left singular vectors of Z;,) yields the optimal solution.
+
+This leads naturally an alternating algorithm [15, 28, 39] to compute an approximate Tucker
+decomposition, shown in Algorithm 1.
+
+4.5 Derivatives
+
+Before we continue, we consider the derivatives of the Tucker operator. Let N= {1,...,.N}, AMe
+RJ and Ge RX 2% XIN, Define a function ¥ as the Tucker operator, i.e.,
+
+F(G,AY,..., A) =]g;AM,..., A].
+
+17
+ 
+
+Algorithm 1 Tucker: Higher Order Orthogonal Iteration
+in: Tensor X of size I, x Ig x --- xX In.
+in: Desired rank of core: J, x Jo X--- xX JN.
+for n=1,...,N do {initialization via HO-SVD}
+A” — J, leading eigenvalues of Xin) Xn)
+end for
+while not converged do {main loop}
+for n=1,...,N do
+ZH PX AY ACHUT TAMHDT ANT]
+ACT — J, leading eigenvalues of Znj Zin)
+
+ 
+
+end for
+end while
+G—X;AMT,... AMT
+out: G of size J, x Jo x --- x Jy and orthonormal matrices A of size I, x Jpn such that
+
+Xx [G;AM,..., AM].
+
+ 
+
+Consider the partial derivative of ¥ with respect to G. The result is a 2N-way array such that
+
+(3) a) gl gi).
+OG trig tn dijo IN “JL t2J2 ININ
+
+In matricized form, this is
+
+(3) —AM gANDe...@AM,
+9G) 3x3)
+
+Consider the derivative of ¥ with respect to A‘, The result is an (N + 2)-way array, such that
+
+( )
+0A) tig-iningn
+Fat
+
+Jy In-1 In
+1 n-1 ntl N
+» — » » “ » Tr je In ain, — OO as — ay:
+fal jn-1=1 jngi=l jn=l
+Another way to see this is as follows. In matricized form, we have
+t
+Fin) = A Gin) (aw @--- GACY GACY @ AY)
+
+Thus, from matrix calculus (see, e.g., [17]), we have
+
+OF ny _
+JAM —
+
+where I is the [,, x I, identity matrix.
+
+ 
+
+(AM e- eA) GACY GAM) GT] OI
+
+5 The Kruskal operator
+
+The Kruskal operator provides shorthand notation for the sum of the outer products of the columns
+of a set of matrices. This turns out to be a special case of the Tucker operator where the core tensor is
+the identity tensor. Unlike the Tucker operator, which can be written using n-mode multiplication,
+there is no concise multidimensional representation for this special case. The result is that this
+operation is usually expressed in matricized form, which tends to obscure its multidimensional
+properties.
+
+18
+5.1 Definition of the Kruskal operator
+
+The Kruskal operator is a special case of the Tucker operator (Definition 4.1) where the core tensor
+G is the Rx Rx--- x R identity tensor and all the matrices A‘) have R columns.
+
+Definition 5.1 Let N= {1,...,N}. Suppose we have matrices A € R/=*® forn © N. Then the
+Kruskal operator is defined as:
+
+JAM, AQ... AM] = pg, AM, AQ. AY, (12)
+
+where J is the identity tensor, i.e., it has ones along the superdiagonal and zeros elsewhere.
+
+See Figure 1{b) for an illustration of the identity tensor. We call this operator the Kruskal
+operator since such an operator was proposed by Kruskal [29].
+
+5.2. Kruskal operator properties
+
+The properties of the Kruskal operator are much more interesting than those of the Tucker operator
+because they do not always directly from the n-mode multiplication results.
+
+The following proposition shows what happens when a Kruskal operator is the core tensor of a
+
+Tucker operator, which can happen when compression is used as the first step in the calculation of
+a PARAFAC decomposition [4].
+
+Proposition 5.2 Let N = {1,...,N}. Suppose we have matrices A™ ¢€ Rn*®, BY) ¢ RKnxXIn
+for alln EN. Then
+
+[JA®,--- AM ‘BO... BOY] = [BYAM,... BY AM).
+
+We can also consider the relationship between the Kruskal operator, matricization, and the
+Khatri-Rao product. This is the analogue of Proposition 4.3 for the Tucker operator.
+
+Proposition 5.3 Let N=1,...,N. Let AM €R*F for alln EN.
+(a) If R= {ri,...,rr} and © = {c,..., cen} partition N, then
+xX = fA, A’)... AY] S
+X(Rxe: In) = (am ©-:-O A) (ales O--- oa)"
+IfR=0, then the first multiplicand is replaced by a length-R row vector of all ones; conversely,
+
+if C =, then the second multiplicand is replaced by a length-R column vector of all ones. In
+other words,
+
++
+XOxN: Ey) = 17 (aw Ores oA) and X(N xO: Ey) = (am OO A) 1.
+(b) Consequently, for any specific n € N we have
+XX = JAM, AQ),... AMT Se
+
+Xin) =A”) (av O-- GAPTU EACH O...0 Am)",
+
+19
+The norm of the Kruskal operator has a very special form because it can be reduced to summing
+the entries of the Hadamard product of N matrices of size R x R.
+
+Proposition 5.4 Let N=1,...,N and AM €R™*® for alln EN. Then
+1A, a2). A] -
+
+ROR
+~y (APTA) & (ADTAQRD) ee (ATA) J
+7 jk
+
+Proof. The proof is a matter of using the definition of the Kruskal operator (Definition 5.1) and
+rearranging the terms appropriately.
+
+| JAM, A®,... AN i = (JAM, aA®@,... AY), [AM aA@,... AQ)
+
+R R
+=(Yaye oa, dial) o-oal”)
+j=l k=1
+
+ll
+1M=
+M> IMs
+
+(27a). (aa)
+
+ll
+
+i
+
+ll
+1m
+>
+
+ll
+1m
+
+(AgTA™) Le (AwTA)
+
+jk jk
+
+The third step used Proposition 3.10. O
+Proposition 5.5 Let Xe RN*2*"*In and N=1,...,N and A™ €R'=** for alln EN.
+(a) The inner product of X and the Kruskal product yields:
+
+(X, fA, A®),... AM ])
+
+XX, a) Xp a’... Ky al%)
+
+ll
+MP»
+
+ll
+1m
+
+K
+
+i
+Ms
+
+(Xecen9 . (a 0 OAM) (AHI O.-0 ac)"))
+jk
+
+ll
+1m
+
+k=1
+
+vec(X), (aw o--@ AM) 1)
+
+ll
+a i
+
+(b) The norm of the difference of X and the Kruskal product is:
+
+|x fa,... ay |" =
+
+20)? = 2(20, JAM... AMY) +|] TAM, AM] i
+
+5.3 The PARAFAC decomposition
+
+The PARAFAC decomposition of X € R1%!2%"*4y is given by
+
+X=JAM, ACG... AMY],
+
+20
+ 
+
+ 
+
+ 
+
+ 
+
+Figure 6.  Tlustration of the PARAFAC decomposition: X =
+[A, B, C]
+
+Here A™ € R&*R, for n = 1,...,N. The PARAFAC decomposition of a three-way tensor is
+illustrated in Figure 6.
+
+In the case that R is minimal, then R is the rank of X [29]. It can be the case that R >
+min{J, | 2 € N}. For example, the maximal rank of a 2 x 2 x 2 tensor is 3 [40, 30]. Moreover, the
+typical rank of a 2 x 2 x 2 tensor is 2 (79% of the time) and 3 (21% of the time) [30]. See [9, 10] for
+an overview of PARAFAC and related decompositions.
+
+The new Kruskal operator replaces the following options for expressing the PARAFAC decom-
+position:
+
+RQ go... gi
+
+ral “ir tor int?
+
+e Sum of outer products: X = ye aly) oa o---0 al’),
+
+e Matricized: X(,) = A®) (AG) @--- GAMD GAD E...9 Aw)! , and
+
+e Vectorized: vec(X) = (AW) @Q---@ AD) 1 where 1 is a ones vector or length R.
+
+e Slice notation (three-way only): If X = [A, B, C] € R/*/**, then we can for example write each
+
+frontal slice (see Figure 3) as
+
+e Elementwise: 2j,i9.iy = >.
+
+X..4= ADB fork=1,...,K,
+
+where the R x R diagonal matrix D™) is defined by D™ = diag(cx,). Slice notation can be used
+in the other directions as well:
+
+X;., = Bdiag(a;,)C™ fori=1,...,J, and
+Xi», = Adiag(b;,)CT for j=1,...,J.
+
+5.4 Computing the PARAFAC decomposition
+
+Faber et al. [16] present an overview of different methods for fitting a PARAFAC decomposition,
+and alternating least squares continues to be the workhorse algorithm ({i.e., slow but steady) and
+thus is our focus here.
+
+Given a tensor X ¢ R'*2*~*!y and a desired rank R, the alternating least squares (ALS)
+algorithm is used to compute a PARAFAC factorization. In general, it is not known how to choose
+R in advance; see, e.g., [11] for more discussion of this issue. Here, we assume that R is known.
+
+As is the case with computing the Tucker approximation, the idea behind ALS is that we solve
+for each factor in turn, leaving all the other factors fixed. Thus, the subproblem at each iteration
+is as follows: Suppose that all factors A‘™, m 4 n, are fixed and solve for B= A). This can be
+
+21
+cast as the following optimization problem:
+
+min ]x-a” ACD BACH AM],
+BeRInx# . . . . . .
+
+From Proposition 5.3(b), this can be expressed in matrix form as
+
+min
+BeRinxk
+
+ 
+
+ 
+
+.
+Xm —B(AM ©. CAPM OAD G...0A2) | .
+
+which is a classic least squares problem. Using Proposition 3.2(c), the optimal solution is easily
+computed as
+
+B= (Ao. CAPM OAM ©...9AM)' XI,
+
+=Vi(AM 5. AMM OAD O...9 AM)" XT,
+where
+Ve= (AMT AW) eek (A@PHDT A@et)) * (AP-DT AD) vee (ADTAD),
+
+Note that V is of size R x R and symmetric. An interesting observation is worth making here, which
+is that the pseudoinverse can be recast using the Kruskal operator. Define
+
+Z=JAM,..., APY vi Aer) 2. AM,
+which is of size I) x ---In-1 X RX Insi <--> X Iy. Then we have
+T InxR
+B= Xn) Zin) € R**,
+A basic ALS algorithm is shown in Algorithm 2.
+
+ 
+
+Algorithm 2 PARAFAC: Alternating Least Squares (ALS)
+
+in: Tensor X of size I, x Ig x --- xX In.
+in: Desired rank of result: R > 0.
+for n=1,...,N do {initialization}
+Initialize Af) in some way (e.g., random or HO-SVD).
+Normalize columns of A“).
+BY — AMTA®),
+end for
+while not converged do {main loop}
+for n=1,...,N do
+V — BO) «06 e BOTY «BOD x. ek BO,
+AM Xu (AN ®...0AM) GACY G...9 AM)" VI
+ifn ~N then
+Normalize columns of A‘),
+end if
+Set B™ — AMTAC),
+end for
+end while
+out: A © Rm*® for n=1,...,N such that Xe [AM,..., AM].
+
+ 
+
+ 
+
+5.5 Derivatives of the Kruskal operator
+
+Finally, we consider derivatives of the Kruskal operator. Let N = {1,2...,N} and A™ € Rmxk
+for all n € N. Define a function ¥ as the Kruskal operator, i.e.,
+
+FAM, ..., AM) = JAM, ...,A%],
+
+22
+Consider the derivative of ¥ with respect to A‘, The result is an (N + 2)-way array, such that
+
+oF nL) (n
+( ) = gD cg Dg lt)... gi)
+iytg--tntn?
+
+dA) ~ “ir tn 1? Wingil int?
+Another way to see this is as follows. In matricized form, we have
+Fen = AM (aw O- CAMMY DAP VE Ao)!
+
+Using the fact that vec(XYZ) = (Z™ @ X)vec(Y) (see, e.g., [17]), we can rewrite the previous
+expression as
+
+vec (Fen) = (ae © GAM) GAP DO A”) @ 1| vec (Any)
+where I is the [,, x I, identity matrix. Thus, from matrix calculus, we can define
+
+3) = Ovec (Fay)
+
+= = (AN @...9 AM) 2 A®eD oe AW I
+Avec (A) ( ©-:-O © © )@
+
+Note that the size of J is (a In) x (I, R). Thus, each partial derivative has the same number
+
+of rows but a different number of columns. A full Jacobian for vec(F) can be constructed using
+the partials, but the rows have to be reordered for consistency [41]. Define P™) to a permutation
+matrix of size Te I, that reorders X‘ to be X, ie.,
+
+Xa) = PMX).
+. . . N N
+Then the full Jacobian of vec(F) is of size (ta In) x Qo, T»R) and defined by
+
+dvec(F)
+
+(ear wa)
+
+ 
+
+= [J PAJe) ... PINYIN) |
+
+6 Conclusions
+
+We consider two new operators that are useful for expressing and understanding higher-order tensor
+decompositions: The Tucker operator is shorthand for all-mode matrix multiplication, and the
+Kruskal operator is shorthand for the sum of the rank-1 tensors that are formed as outer products
+of the columns of the component matrices. By using these new operators, we can more easily
+express and understand the multilinear nature of the Tucker and PARAFAC decompositions because
+matricized representations can be avoided or at least easy to switch between. We have gathered
+together many commonly known and used properties but expressed them here in their native multi-
+linear contexts, avoiding the potential confusion that comes about due to the numerous options for
+matricization and vectorization.
+
+We have reviewed the ALS methods for both Tucker and PARAFAC using the new operators,
+though there are many approaches including those that handle constraints (see, e.g., [3, 16, 42, 47]).
+Moreover, many other approaches rely on gradient information (see, e.g., [34, 41]), so we have
+included derivatives of our operators. We also note that MATLAB software exists for working with
+tensors [8] and for efficiently computing the various decompositions [5].
+
+23
+[1]
+
+[14]
+
+[15]
+
+(16)
+
+[17]
+
+(18)
+
+References
+
+E. Acar, S. A. CAMTEPE, M. S. KRISHNAMOORTHY, AND B. YENER, Modeling and multiway
+analysis of chatroom tensors, in ISI 2005: IEEE International Conference on Intelligence and
+Security Informatics, vol. 3495 of Lecture Notes in Computer Science, Springer Verlag, 2005,
+pp. 256-268.
+
+C. ANDERSSON AND R. HENRION, A general algorithm for obtaining simple structure of core
+arrays in N-way PCA with application to fluorimetric data, Comput. Stat. Data. An., 31 (1999),
+pp. 255-278.
+
+C. A. ANDERSSON AND R. Bro, Improving the speed of multi-way algorithms: Part I: Tucker3,
+Chemometr. Intell. Lab., 42 (1998), pp. 93-103.
+
+ 
+
+, Improving the speed of multi-way algorithms: Part IH: Compression, Chemomettr. Intell.
+Lab., 42 (1998), pp. 105-113.
+
+C. A. ANDERSSON AND R. Bro, The N-way toolbox for MATLAB, Chemometr. Intell. Lab.,
+52 (2000), pp. 1-4. See also http: //www.models.kv1.dk/source/nwaytoolbox/.
+
+C. J. APPELLOF AND E. R. DavIDSON, Strategies for analyzing data from video fluorometric
+monitoring of liquid chromatographic effluents, Anal. Chem., 53 (1981), pp. 2053-2056.
+
+B. W. BADER. private communication, 2005.
+
+B. W. BADER AND T. G. Kouba, Algorithm raz: MATLAB tensor classes for fast algorithm
+prototyping, ACM Transactions on Mathematical Software. To appear. See also http://csmr.
+ca. sandia. gov/~tgkolda/TensorToolbox.
+
+R. Bro, PARAFAC. tutorial and applications, Chemometr. Intell. Lab., 38 (1997), pp. 149-171.
+
+, Multi-way analysis in the food industry. models, algorithms, and applications, PhD thesis,
+University of Amsterdam, 1998. Available at http: //www.models.kvl.dk/research/theses/.
+
+ 
+
+R. Bro AND H. A. L. KIErRs, A new efficient method for determining the number of components
+in parafac models, J. Chemometr., 17 (2003), pp. 274-286.
+
+J. D. CARROLL AND J. J. CHANG, Analysis of individual differences in multidimensional
+scaling via an N-way generalization of ‘Eckart- Young’ decomposition, Psychometrika, 35 (1970),
+pp. 283-319.
+
+B. CHEN, A. PETROPOLU, AND L. DE LATHAUWER, Blind identification of convolutive MIM
+systems with 3 sources and 2 sensors, Applied Signal Processing, (2002), pp. 487-496. (Special
+Issue on Space-Time Coding and Its Applications, Part IT).
+
+L. DE LaTHAUWER, B. DE Moor, AND J. VANDEWALLE, A multilinear singular value de-
+composition, SIAM J. Matrix Anal. A., 21 (2000), pp. 1253-1278.
+
+——, On the best rank-1 and rank(R,Ro,...,RN) approvimation of higher-order tensors,
+SIAM J. Matrix Anal. A., 21 (2000), pp. 1324-1342.
+
+N. K. M. FaBer, R. Bro, AND P. K. Hopke, Recent developments in CANDE-
+COMP/PARAFAC algorithms: a critical review, Chemometr. Intell. Lab., 65 (2003), pp. 119-
+137.
+
+P. L. Facker, Notes on matrix calculus. Available from http: //www4.ncsu.edu/~pfackler/
+MatCalc.pdf, Sept. 2005.
+
+V.S. Gricorascu AND P. A. REGALIA, Fast Reliable Algorithms for Matrices with Structure,
+SIAM, 1999, ch. Tensor displacement structures and polyspectral matching, pp. 245-276.
+
+24
+[19]
+
+(20)
+
+(21)
+
+[22]
+
+[23]
+
+(24)
+
+(25)
+
+(28)
+
+(29)
+
+(30)
+
+[31]
+
+[32]
+
+[36
+
+(37)
+
+R. A. HaRSHMAN, Foundations of the PARAFAC procedure: models and conditions for an
+“explanatory” multi-modal factor analysis, UCLA working papers in phonetics, 16 (1970), pp. 1-
+84.
+
+, An index formulism that generalizes the capabilities of matrix notation and algebra to
+n-way arrays, J. Chemometr., 15 (2001), pp. 689-714.
+
+ 
+
+R. HENRION, Body diagonalization of core matrices in three-way principal components analysis:
+Theoretical bounds and simulation, J. Chemometr., 7 (1993), pp. 477-494.
+
+, N-way principal component analysis theory, algorithms and applications, Chemometr.
+Intell. Lab., 25 (1994), pp. 1-23.
+
+ 
+
+H. A. KIERS, Joint orthomaz rotation of the core and component matrices resulting from three-
+mode principal components analysis, J. Classif., 15 (1998), pp. 245 — 263.
+
+H. A. L. Kiers, Towards a standardized notation and terminology in multiway analysis, J.
+Chemometr., 14 (2000), pp. 105-122.
+
+T. G. Kouba, Orthogonal tensor decompositions, SIAM J. Matrix Anal. A., 23 (2001), pp. 243-
+255.
+
+T. G. KOLDA AND B. W. BADER, The TOPHITS model for higher-order web link analysis, in
+Workshop on Link Analysis, Counterterrorism and Security, 2006.
+
+T. G. Kouba, B. W. BADER, AND J. P. KENNY, Higher-order web link analysis using multi-
+linear algebra, in ICDM 2005: Proceedings of the 5th IEEE International Conference on Data
+Mining, IEEE Computer Society, 2005, pp. 242-249.
+
+P. M. KROONENBERG AND J. DE LEEUW, Principal component analysis of three-mode data
+by means of alternating least squares algorithms, Psychometrika, 45 (1980), pp. 69-97.
+
+J. B. KRUSKAL, Three-way arrays: rank and uniqueness of trilinear decompositions, with ap-
+plication to arithmetic complexity and statistics, Linear Algebra Appl., 18 (1977), pp. 95-138.
+
+J.B. KRUSKAL, Rank, decomposition, and uniqueness for 3-way and N-way arrays, in Multiway
+Data Analysis, R. Coppi and S. Bolasco, eds., Elsevier Science Publishers B.V., 1989.
+
+R. P. McDONALD, A simple comprehensive model for the analysis of covariance structures,
+Brit. J. Math. Stat. Psy., 33 (1980), p. 161. Cited in [10].
+
+M. Mtrup, L. K. HANSEN, C. S. HERRMANN, J. PARNAS, AND S. M. ARNFRED, Parallel
+factor analysis as an exploratory tool for wavelet transformed event-related eeg, Neurolmage,
+(2005). In Press, Corrected Proof, Available online 26 September 2005.
+
+D. MUTI AND 5. BOURENNANE, Multidimensional filtering based on a tensor approach, Signal
+Process., 85 (2005), pp. 2338-2353.
+
+P. PAATERO, The multilinear engine - a table-driven, least squares program for solving multi-
+linear problems, including the n-way parallel factor analysis model, J. Comput. Graph. Stat., 8
+(1999), pp. 854-888.
+
+C. R. Rao AnD S. MITRA, Generalized inverse of matrices and its applications, Wiley, New
+York, 1971. Cited in [10].
+
+B. Savas, Analyses and tests of handwritten digit recognition algorithms, master’s thesis,
+Linkoping University, Sweden, 2003.
+
+A. SMILDE, R. Bro, AND P. GELADI, Multi-way analysis: applications in the chemical sci-
+ences, Wiley, 2004.
+
+25
+(38)
+
+[39]
+
+(40)
+
+(41)
+
+(46)
+
+(47)
+
+J.-T. Sun, H.-J. Zenc, H. Liu, Y. Lu, AND Z. CHEN, CubeSVD: a novel approach to
+personalized Web search, in WWW 2005: Proceedings of the 14th international conference on
+World Wide Web, 2005, pp. 382-390.
+
+J. TEN BERGE, J. DE LEEUW, AND P. M. KROONENBERG, Some additional results on prin-
+
+cipal components analysis of three-mode data by means of alternating least squares algorithms,
+Psychometrika, 52 (1987), pp. 183-191.
+
+J. M. F. TEN Berce, H. A. L. Kiers, AnD J. DE LEEUW, Explicit CANDE-
+COMP/PARAFAC solutions for a contrived 222 array of rank three, Psychometrika, 53 (1988),
+pp. 579-583.
+
+G. Tomasl, Use of the properties of the Khatri-Rao product for the computation of Jacobian,
+Hessian, and gradient of the PARAFAC model under MATLAB. 2005.
+
+G. TOMASI AND R.. BRo, A comparison of algorithms for fitting the PARAFAC model, Comput.
+Stat. Data. An., (2005).
+
+L. R. Tucker, Some mathematical notes on three-mode factor analysis, Psychometrika, 31
+(1966), pp. 279-311.
+
+C. F. Van Loan, The ubiquitous Kronecker product, J. Comput. Appl. Math., 123 (2000),
+pp. 85-100.
+
+M. A. O. VASILESCU AND D. TERZOPOULOS, Multilinear analysis of image ensembles: Ten-
+sorFaces, in ECCV 2002: 7th European Conference on Computer Vision, vol. 2350 of Lecture
+Notes in Computer Science, Springer-Verlag, 2002, pp. 447-460.
+
+H. WANG AND N. AunuJa, Facial expression decomposition, in ICCV 2003: 9th IEEE Interna-
+tional Conference on Computer Vision, vol. 2, 2003, pp. 958-965.
+
+T. ZHANG AND G. H. Gouus, Rank-one approximation to high order tensors, SIAM J. Matrix
+Anal. A., 23 (2001), pp. 534-550.
+
+26
+A FTpxX formatting
+
+The double brackets used to denote the Tucker and Kruskal operators are produced as follows:
+
+ 
+
+\usepackage{stmaryrd} 4% provides \llbracket and \rrbracket
+$\llbracket ... \rrbracket$  % here are the brackets
+
+ 
+
+ 
+
+ 
+
+The boldface Euler script letters that are used to denote tensors are produced as follows:
+
+ 
+
+\usepackage{amsmath} 4 provides \boldsymbol
+\usepackage [mathscr]{eucal} % provides \mathscr (Euler script)
+
+$\boldsymbol{\mathscr{X}}$ % here’s a tensor X
+
+ 
+
+ 
+
+ 
+
+27
+DISTRIBUTION:
+
+2 MS 9018 1 MS 0188
+Central Technical Files, 8945-1 D. Chavez, LDRD Office, 1011
+2 MS 0899
+
+Technical Library, 4536
+
+28
+
