@@ -24,9 +24,9 @@ words = cell(N, 1);
 
 for i = 1:length(files)
     fid1 = files(i).name;
-    disp(fid1);
+    %dispfid1
     newFileNames{i} = replace(fid1,'txt','mat');
-    disp(newFileNames(i))
+    %newFileNames(i)
     fidI = fopen(files(i).name,'r');
     temp = textscan(fidI, '%s');
     docWords = {};
@@ -138,8 +138,8 @@ for doc=1:N %for every doc
         i = i+1;
     end
 
-    fprintf("Writing file: ");
-    disp(newFileNames{doc});
+    %fprintf("Writing file: ");
+    %newFileNames{doc};
     
     % write the file
     fileID = newFileNames{doc};
