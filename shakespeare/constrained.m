@@ -4,13 +4,20 @@
 %addpath  C:\Users\MeiLi\OneDrive\Documents\MATLAB
 addpath /Users/meilicharles/Documents/MATLAB/hacoo-matlab/
 
-fprintf("Building Shakespeare corpus with constrained vocabulary.\n")
-
+files = dir('*.TXT');
 NUMTRIALS = 10;
 htns_elapsed = 0;
 tt_elapsed = 0;
 htns_cpu = 0;
 tt_cpu = 0;
+fileID = fopen('con_shakespeare.txt','w');
+
+fprintf(fileID,"Building Shakespeare corpus with constrained vocabulary.\n");
+
+for i = 1:length(files)
+    fid1 = files(i).name;
+    fprintf(fileID,"%s\n",fid1);
+end
 
 for i=0:NUMTRIALS
     %HaCOO tests
@@ -43,12 +50,10 @@ tt_elapsed = tt_elapsed/NUMTRIALS;
 htns_cpu = htns_cpu/NUMTRIALS;
 tt_cpu = tt_cpu/NUMTRIALS;
 
-fprintf("Average elapsed time using HaCOO: ")
-htns_elapsed
-fprintf("Average CPU time using HaCOO: ")
-htns_cpu
+fprintf(fileID,"Averages calculated over %d trials.\n",NUMTRIALS);
+fprintf(fileID,"Average elapsed time using HaCOO: %f\n",htns_elapsed);
+fprintf(fileID,"Average CPU time using HaCOO: %f\n",htns_cpu);
+fprintf(fileID,"Average elapsed time using Tensor Toolbox: %f\n",tt_elapsed);
+fprintf(fileID,"Average CPU time using Tensor Toolbox: %f\n",tt_cpu);
 
-fprintf("Average elapsed time using Tensor Toolbox: ")
-tt_elapsed
-fprintf("Average CPU time using Tensor Toolbox: ")
-tt_cpu
+fclose(fileID);
