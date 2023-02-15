@@ -8,6 +8,7 @@ params.addParameter('vocabFile','vocabulary',@isstring);
 params.addParameter('freqFile','@',@isstring);
 params.addParameter('constraint',10e4,@isscalar);
 params.addParameter('ngram',3,@isscalar);
+params.addParameter('mat_save',0,@isscalar);
 params.parse(varargin{:});
 
 %% Copy from params object
@@ -15,6 +16,7 @@ vocabFile = params.Results.vocabFile;
 freqFile = params.Results.freqFile;
 constraint = params.Results.constraint;
 ngram = params.Results.ngram;
+mat_save = params.Results.mat_save;
 %%
 
 files = dir('*.TXT');
@@ -138,12 +140,14 @@ for doc=1:N %for every doc
         i = i+1;
     end
 
-    %fprintf("Writing file: ");
-    %newFileNames{doc};
-    
-    % write the file
-    fileID = newFileNames{doc};
-    save(fileID,'tns','-v7.3'); %adding version to save large files
+    if mat_save
+        %fprintf("Writing file: ");
+        %newFileNames{doc};
+
+        % write the file
+        fileID = newFileNames{doc};
+        save(tns, fileID,'-v7.3'); %adding version to save large files
+    end
     
 end
 

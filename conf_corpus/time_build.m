@@ -1,19 +1,28 @@
-% Build tensors from a directory of .txt files using Tensor Toolbox's
-% sptensor class and functions.
+%Measure elapsed and cpu time required to build document tensors using
+%Tensor Toolbox sptensor and HaCOO htensor.
 
-%addpath  C:\Users\MeiLi\OneDrive\Documents\MATLAB
-addpath /Users/meilicharles/Documents/MATLAB/hacoo-matlab/
+function time_build(varargin)
+%% Set up params
+params = inputParser;
+params.addParameter('numTrials',10,@isscalar);
+params.addParameter('constraint',10e4,@isscalar);
+params.addParameter('outFile','tns_build_file',@isstring);
+params.parse(varargin{:});
+
+%% Copy from params object
+NUMTRIALS = params.Results.numTrials;
+constraint = params.Results.constraint;
+outFile = params.Results.outFile;
+%%
 
 files = dir('*.TXT');
-NUMTRIALS = 10;
-constraint = 600;
 htns_elapsed = 0;
 tt_elapsed = 0;
 htns_cpu = 0;
 tt_cpu = 0;
-fileID = fopen('con_conference.txt','w');
+fileID = fopen(outFile,'w');
 
-fprintf(fileID,"Building Conference corpus with constrained %i word vocabulary .\n",constraint);
+fprintf(fileID,"Building Conference corpus with %i word vocabulary.\n",constraint);
 
 for i = 1:length(files)
     fid1 = files(i).name;
@@ -23,23 +32,17 @@ end
 for i=0:NUMTRIALS
     %HaCOO tests
     tStart = cputime;
-    f = @() htns_doctns('constraint',constraint); % handle to function
-    %fprintf("Wall Clock time using HaCOO: ")
+    f = @() doctns('tns_format',"htensor",'constraint',constraint); % handle to function
     temp = timeit(f);
     htns_elapsed = htns_elapsed + temp;
-
-    %fprintf("Total CPU time using HaCOO: ")
     tEnd = cputime - tStart;
     htns_cpu = htns_cpu + tEnd;
 
     %COO tests
     tStart = cputime;
-    f = @() tt_doctns('constraint',constraint); % handle to function
-    %fprintf("Wall Clock time using Tensor Toolbox: ")
+    f = @() doctns('tns_format',"sptensor",'constraint',constraint); % handle to function
     temp = timeit(f);
     tt_elapsed = tt_elapsed + temp;
-
-    %fprintf("Total CPU time using Tensor Toolbox: ")
     tEnd = cputime - tStart;
     tt_cpu = tt_cpu + tEnd;
 

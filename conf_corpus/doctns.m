@@ -1,18 +1,44 @@
-function htns_doctns(varargin)
+%{
+ File: htns_doctnns.m
+
+Parameters:
+    tns_format - which tensor format to use (sptensor or htensor)
+    vocabFile - save vocabulary file
+    freqFile - save frequency file
+    constraint - limit vocabulary to the n most frequent words
+    ngram - set the number of consecutive words when building tensor
+    save - save document tensors as .mat files
+%}
+
+function doctns(varargin)
 %% Set up params
 params = inputParser;
+params.addParameter('tns_format','default',@isstring);
 params.addParameter('vocabFile','vocabulary',@isstring);
 params.addParameter('freqFile','@',@isstring);
 params.addParameter('constraint',10e4,@isscalar);
 params.addParameter('ngram',3,@isscalar);
+params.addParameter('mat_save',0,@isscalar);
 params.parse(varargin{:});
 
 %% Copy from params object
+fmt = params.Results.tns_format;
 vocabFile = params.Results.vocabFile;
 freqFile = params.Results.freqFile;
 constraint = params.Results.constraint;
 ngram = params.Results.ngram;
+mat_save = params.Results.mat_save;
 %%
+
+%Check if tensor format is valid
+if strcmp(fmt,"sptensor")
+    fmtNum = 1;
+elseif strcmp(fmt,"htensor")
+    fmtNum = 2;
+else 
+    printf("Tensor format invalid.\n");
+    return
+end
 
 files = dir('*.TXT');
 N = numel(files);
@@ -21,9 +47,7 @@ words = cell(N, 1);
 
 for i = 1:length(files)
     fid1 = files(i).name;
-    %fid1
     newFileNames{i} = replace(fid1,'txt','mat');
-    %newFileNames(i)
     fidI = fopen(files(i).name,'r');
     temp = textscan(fidI, '%s');
     docWords = {};
@@ -36,12 +60,6 @@ for i = 1:length(files)
     words{i} = transpose(docWords);
 end
 
-%for i = 1:length(words)
-    %Remove punctuation, numbers, and convert to lowercase
-%end
-
-%disp(words{1}{1})
-%disp(words{2}{1})
 
 % Build raw vocabulary dictionary
 vocab = containers.Map;
@@ -100,13 +118,17 @@ end
 
 % construct the word lookup
 wordToIndex = containers.Map(vocabKeys,vocabIndex);
-%wordToIndex.keys
-%wordToIndex.values
 
 
 % construct the document tensors
 for doc=1:N %for every doc
-    tns = htensor();
+    %If using HaCOO format
+    if fmtNum == 2
+        tns = htensor();
+    elseif fmtNum == 1 %else use COO format
+        tns = sptensor(ones(1,ngram));
+    end
+    
     curr_doc = words{doc}; %word list for current doc
     i = 1;
     limit = length(curr_doc) - ngram;
@@ -124,29 +146,48 @@ for doc=1:N %for every doc
             idx(w) = wordToIndex(word);
         end
 
-        % accumulate the count
-        %Search if index already exists in tensor
-        [k,j] = tns.search(idx);
+        %If using HaCOO format
+        if fmtNum == 2
+            % accumulate the count
+            %Search if index already exists in tensor
+            [k,j] = tns.search(idx);
 
-        if j == -1 %if it doesnt exist yet, set new entry
-            %set() now checks if it has bucket and row/chain index already given
-            tns = tns.set(idx,1,'bucket',k,'chainIdx',j);
-        else
-            %else, update the entry's val
-            tns.table{k}{j,2} = tns.table{k}{j,2} + 1;
-            %fprintf('Existing entry has been updated.\n')
+            if j == -1 %if it doesnt exist yet, set new entry w/ value of 1
+                tns.table{k} = {idx 1};
+            else
+                %else, update the entry's val
+                tns.table{k}{j,2} = tns.table{k}{j,2} + 1;
+                %fprintf('Existing entry has been updated.\n')
+            end
+
+        %If using COO format
+        elseif fmtNum == 1
+            %Check if this index is larger than the sptensor size
+            updateModes = idx > size(tns);
+
+            if any(updateModes) %if any index modes are larger, just insert
+                tns(idx) = 1;
+            else
+                %update the entry's val
+                tns(idx) = tns(idx) + 1;
+                %fprintf('Entry has been updated: ')
+                %idx
+                %tns(idx)
+            end
         end
 
         % next word
         i = i+1;
     end
 
-    %fprintf("Writing file: ");
-    %newFileNames{doc}
-    
-    % write the file
-    fileID = newFileNames{doc};
-    write_htns(tns,fileID);
+    if mat_save
+        %fprintf("Writing file: ");
+        %newFileNames{doc}
+        
+        % write the file
+        fileID = newFileNames{doc};
+        write_htns(tns,fileID,'-v7.3');
+    end
     
 end
 
