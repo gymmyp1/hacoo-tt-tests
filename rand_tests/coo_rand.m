@@ -1,6 +1,6 @@
 %Test for timing n random accesses on a Tensor Toolbox COO sptensor.
 
-function coo_rand(n, modes,nnz)
+function avg = coo_rand(n, modes,nnz)
 
 % A random, sparse tensor with nnz nonzeros.
 X = sptenrand(modes,nnz);
@@ -8,7 +8,6 @@ X = sptenrand(modes,nnz);
 NUMTRIALS = n; %try one million elements
 
 genIdx = zeros(1,length(modes));
-asn = 0; %just a counter
 
 for i = 1:NUMTRIALS
     %Generate a random index
@@ -16,7 +15,10 @@ for i = 1:NUMTRIALS
         genIdx(j) = randi([1,modes(j)]);
     end
 
+    tic
     X(genIdx);
+    sum = sum + toc;
+
     %{
     %Check if that index exists
     if X(genIdx) == 0
@@ -31,5 +33,7 @@ for i = 1:NUMTRIALS
     end
     %}
 end
+
+avg = sum/NUMTRIALS;
 
 end

@@ -1,5 +1,7 @@
 %{
  File: htns_doctnns.m
+ Purpose: Report time required to update all document tensors (times
+    index insertion only).
 
 Parameters:
     tns_format - which tensor format to use (sptensor or htensor)
@@ -8,9 +10,13 @@ Parameters:
     constraint - limit vocabulary to the n most frequent words
     ngram - set the number of consecutive words when building tensor
     save - save document tensors as .mat files
+
+Returns:
+    sum - accumulated time required to update all entries in all document
+    tensors
 %}
 
-function doctns(varargin)
+function [walltime,cpu_time] = doctns(varargin)
 %% Set up params
 params = inputParser;
 params.addParameter('tns_format','default',@isstring);
@@ -29,6 +35,8 @@ constraint = params.Results.constraint;
 ngram = params.Results.ngram;
 mat_save = params.Results.mat_save;
 %%
+
+walltime = 0;
 
 %Check if tensor format is valid
 if strcmp(fmt,"sptensor")
@@ -148,6 +156,8 @@ for doc=1:N %for every doc
 
         %If using HaCOO format
         if fmtNum == 2
+            tic
+            tStart = cputime;
             % accumulate the count
             %Search if index already exists in tensor
             [k,j] = tns.search(idx);
@@ -158,7 +168,11 @@ for doc=1:N %for every doc
                 %else, update the entry's val
                 tns.table{k}{j,2} = tns.table{k}{j,2} + 1;
                 %fprintf('Existing entry has been updated.\n')
+            
             end
+            walltime = walltime + toc;
+            tEnd = cputime - tStart;
+            cpu_time = cputime + tEnd;
 
         %If using COO format
         elseif fmtNum == 1
@@ -168,11 +182,14 @@ for doc=1:N %for every doc
             if any(updateModes) %if any index modes are larger, just insert
                 tns(idx) = 1;
             else
+                tic
+                tStart = cputime;
                 %update the entry's val
                 tns(idx) = tns(idx) + 1;
-                %fprintf('Entry has been updated: ')
-                %idx
-                %tns(idx)
+
+                walltime = walltime + toc;
+                tEnd = cputime - tStart;
+                cpu_time = cputime + tEnd;
             end
         end
 
@@ -190,7 +207,6 @@ for doc=1:N %for every doc
     end
     
 end
-
 
 end %<-- end function
 
