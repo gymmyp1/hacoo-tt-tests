@@ -37,6 +37,7 @@ mat_save = params.Results.mat_save;
 %%
 
 walltime = 0;
+cpu_time = 0;
 
 %Check if tensor format is valid
 if strcmp(fmt,"sptensor")
