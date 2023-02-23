@@ -154,10 +154,11 @@ for doc=1:N %for every doc
             idx(w) = wordToIndex(word);
         end
 
+        tic
+        tStart = cputime;
+
         %If using HaCOO format
         if fmtNum == 2
-            tic
-            tStart = cputime;
             % accumulate the count
             %Search if index already exists in tensor
             [k,j] = tns.search(idx);
@@ -170,9 +171,6 @@ for doc=1:N %for every doc
                 %fprintf('Existing entry has been updated.\n')
             
             end
-            walltime = walltime + toc;
-            tEnd = cputime - tStart;
-            cpu_time = cputime + tEnd;
 
         %If using COO format
         elseif fmtNum == 1
@@ -182,17 +180,15 @@ for doc=1:N %for every doc
             if any(updateModes) %if any index modes are larger, just insert
                 tns(idx) = 1;
             else
-                tic
-                tStart = cputime;
                 %update the entry's val
                 tns(idx) = tns(idx) + 1;
-
-                walltime = walltime + toc;
-                tEnd = cputime - tStart;
-                cpu_time = cputime + tEnd;
             end
         end
 
+        walltime = walltime + toc;
+        tEnd = cputime - tStart;
+        cpu_time = cpu_time + tEnd;
+        
         % next word
         i = i+1;
     end
