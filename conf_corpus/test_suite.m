@@ -8,4 +8,4 @@ addpath /Users/meilicharles/Documents/MATLAB/hacoo-matlab/
 time_build('numTrials',10,'constraint',600,'outFile',"2_23con_conf.txt");
 
 %Run unconstrainted tests
-%time_build('numTrials',10,'outFile',"2_22uncon_conf.txt");
+%time_build('numTrials',10,'outFile',"2_23uncon_conf.txt");
