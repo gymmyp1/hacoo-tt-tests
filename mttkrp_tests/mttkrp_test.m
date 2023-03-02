@@ -9,19 +9,16 @@ htns_elapsed = 0;
 tt_elapsed = 0;
 htns_cpu = 0;
 tt_cpu = 0;
-file = 'nips_hacoo.mat';
-fileID = fopen('nips_mttkrp_avg.txt','w');
+file = 'uber_hacoo.mat';
+fileID = fopen('uber_mttkrp_avg.txt','w');
 fprintf(fileID,"Reporting averages for MTTKRP for %s over all modes over %d trials.\n",file,NUMTRIALS);
 
 %Load the tensor
 T = load_htns(file);
 
 %Set up Tensor Toolbox sptensor
-table = readtable('nips.txt');
-idx = table(:,1:end-1);
-vals = table(:,end);
-idx = table2array(idx);
-vals = table2array(vals);
+idx= T.all_subs();
+vals = T.all_vals();
 X = sptensor(idx,vals);
 
 %Set up U
@@ -48,26 +45,16 @@ for trials = 1:NUMTRIALS
     for n = 1:T.nmodes
         %HaCOO tests
         tStart = cputime;
-        f = @() htns_coo_mttkrp(T,U,n); %<--matricize with respect to dimension n.
-        %fprintf("Wall Clock time using HaCOO: ")
-        temp = timeit(f);
-        htns_elapsed = htns_elapsed + temp;
-
-        %fprintf("Total CPU time using HaCOO: ")
-        tEnd = cputime - tStart;
-        htns_cpu = htns_cpu + tEnd;
+        [walltime,cpu_time] = htns_coo_mttkrp(T,U,n); %<--matricize with respect to dimension n.
+        htns_elapsed = htns_elapsed + walltime;
+        htns_cpu = htns_cpu + cpu_time;
     end
 
 
     for n = 1:T.nmodes
-        %COO tests
-        tStart = cputime;
-        f = @() mttkrp(X,U,n); %<--matricize with respect to dimension i
-        temp = timeit(f);
-        tt_elapsed = tt_elapsed + temp;
-
-        tEnd = cputime - tStart;
-        tt_cpu = tt_cpu + tEnd;
+        [walltime,cput_time] = mttkrp(X,U,n); %<--matricize with respect to dimension i
+        tt_elapsed = tt_elapsed + walltime;
+        tt_cpu = tt_cpu + cpu_time;
 
     end
 end

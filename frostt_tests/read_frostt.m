@@ -52,14 +52,14 @@ while ischar(tline)
     %If using COO format
     elseif fmtNum == 1
         %Check if this index is larger than the sptensor size
-        updateModes = idx > size(tns);
+        %updateModes = idx > size(tns);
 
-        if any(updateModes) %if any index modes are larger, just insert
+        %if any(updateModes) %if any index modes are larger, just insert
             tns(idx) = 1;
-        else
+        %else
             %update the entry's val
-            tns(idx) = tns(idx) + 1;
-        end
+        %    tns(idx) = tns(idx) + 1;
+        %end
     end
     walltime = walltime + toc;
     tEnd = cputime - tStart;

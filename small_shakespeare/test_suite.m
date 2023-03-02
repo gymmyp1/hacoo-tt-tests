@@ -5,7 +5,7 @@
 addpath /Users/meilicharles/Documents/MATLAB/hacoo-matlab/
 
 %Run constrained tests
-%time_build('numTrials',10,'constraint',600,'outFile',"2_22con_conf.txt");
+%time_build('numTrials',10,'constraint',600,'outFile',"2_25small_shakespeare.txt");
 
 %Run unconstrainted tests
-time_build('numTrials',10,'outFile',"2_22uncon_small_shakespeare.txt");
+time_build('numTrials',10,'outFile',"2_25uncon_small_shakespeare.txt");

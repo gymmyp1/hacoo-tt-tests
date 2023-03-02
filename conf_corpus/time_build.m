@@ -22,7 +22,7 @@ htns_cpu = 0;
 tt_cpu = 0;
 fileID = fopen(outFile,'w');
 
-fprintf(fileID,"Building Conference corpus with %i word vocabulary.\n",constraint);
+fprintf(fileID,"Building corpus with %i word vocabulary.\n",constraint);
 
 for i = 1:length(files)
     fid1 = files(i).name;
