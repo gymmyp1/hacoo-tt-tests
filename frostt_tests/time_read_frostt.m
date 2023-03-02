@@ -15,8 +15,16 @@ cpu_time = 0;
 fid = fopen(file,'rt');
 hdr = fgetl(fid);
 num = numel(regexp(hdr,' ','split'));
-fmt = repmat('%d',1,num);
-sizeA = [num Inf];
+
+if strcmp(file,"enron.txt") || strcmp(file,"nell-2.txt") || strcmp(file,"lbnl-network.txt")
+    fmt = repmat('%d',1,num-1); %to read files with decimal values (enron, nell-2,lbnl)
+    fmt = strcat(fmt,'%f');
+else
+    fmt = repmat('%d',1,num); %to read files with no decimal values
+end
+
+%sizeA = [num Inf];
+sizeA = [num nnz]; %for larger tensors
 tdata = fscanf(fid,fmt,sizeA);
 tdata = tdata';
 fclose(fid);
@@ -36,6 +44,7 @@ else
     return
 end
 
+
 %iterate over each idx and insert
 for i=1:nnz
     tic
@@ -43,18 +52,9 @@ for i=1:nnz
 
     %If using COO format
     if fmtNum == 1
-        tns(idx) = vals(i);
+        tns(idx(i,:)) = vals(i);
     elseif fmtNum == 2 %If using HaCOO format
-        %Search if index already exists in tensor
-        [k,j] = tns.search(idx);
-
-        %if j == -1 %if it doesnt exist yet, set new entry w/ value of 1
-            tns.table{k} = {idx 1};
-        %else (This is commented out b/c COO assumes no duplicate indices
-            %else, update the entry's val
-            %tns.table{k}{j,2} = tns.table{k}{j,2} + 1;
-            %fprintf('Existing entry has been updated.\n')
-        %end
+        tns = tns.set(idx(i,:),vals(i));
     end
     walltime = walltime + toc;
     tEnd = cputime - tStart;
