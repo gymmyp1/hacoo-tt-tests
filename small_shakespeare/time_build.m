@@ -29,17 +29,24 @@ for i = 1:length(files)
     fprintf(fileID,"%s\n",fid1);
 end
 
-for i=0:NUMTRIALS
+[N,words,wordToIndex,newFileNames] = build_vocab('constraint',constraint);
+
+fprintf("HaCOO Tests\n");
+for i=1:NUMTRIALS
     %HaCOO tests
-    [walltime,cpu_time] = doctns('tns_format',"htensor",'constraint',constraint); % handle to function
+    fprintf("Trial %d\n",i);
+    [walltime,cpu_time] = doctns(N,words,wordToIndex,newFileNames,'format',"htensor");
     htns_elapsed = htns_elapsed + walltime;
     htns_cpu = htns_cpu + cpu_time;
+end
 
+fprintf("COO Tests\n");
+for i=1:NUMTRIALS
     %COO tests
-    [walltime,cpu_time] = doctns('tns_format',"sptensor",'constraint',constraint); % handle to function
+    fprintf("Trial %d\n",i);
+    [walltime,cpu_time] = doctns(N,words,wordToIndex,newFileNames,'format',"sptensor");
     tt_elapsed = tt_elapsed + walltime;
     tt_cpu = tt_cpu + cpu_time;
-
 end
 
 htns_elapsed = htns_elapsed/NUMTRIALS;

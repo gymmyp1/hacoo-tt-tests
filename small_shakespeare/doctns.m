@@ -5,129 +5,41 @@
 
 Parameters:
     tns_format - which tensor format to use (sptensor or htensor)
-    vocabFile - save vocabulary file
-    freqFile - save frequency file
-    constraint - limit vocabulary to the n most frequent words
     ngram - set the number of consecutive words when building tensor
     save - save document tensors as .mat files
 
 Returns:
-    sum - accumulated time required to update all entries in all document
+    walltime - accumulated elapsed time required to build all document
+    tensors
+    cputime - accumulated cpu time required to build all document
     tensors
 %}
 
-function [walltime,cpu_time] = doctns(varargin)
-%% Set up params
+function [walltime,cpu_time] = doctns(N,words,wordToIndex,newFileNames,varargin)
 params = inputParser;
-params.addParameter('tns_format','default',@isstring);
-params.addParameter('vocabFile','vocabulary',@isstring);
-params.addParameter('freqFile','@',@isstring);
-params.addParameter('constraint',10e4,@isscalar);
+params.addParameter('format','default',@isstring);
 params.addParameter('ngram',3,@isscalar);
 params.addParameter('mat_save',0,@isscalar);
 params.parse(varargin{:});
 
 %% Copy from params object
-fmt = params.Results.tns_format;
-vocabFile = params.Results.vocabFile;
-freqFile = params.Results.freqFile;
-constraint = params.Results.constraint;
+formatmt = params.Results.format;
 ngram = params.Results.ngram;
 mat_save = params.Results.mat_save;
 %%
 
-walltime = 0;
-cpu_time = 0;
-
 %Check if tensor format is valid
-if strcmp(fmt,"sptensor")
+if strcmp(formatmt,"sptensor")
     fmtNum = 1;
-elseif strcmp(fmt,"htensor")
+elseif strcmp(formatmt,"htensor")
     fmtNum = 2;
 else 
-    printf("Tensor format invalid.\n");
+    fprintf("Tensor format invalid.\n");
     return
 end
 
-files = dir('*.TXT');
-N = numel(files);
-newFileNames = cell(N,1);
-words = cell(N, 1);
-
-for i = 1:length(files)
-    fid1 = files(i).name;
-    newFileNames{i} = replace(fid1,'txt','mat');
-    fidI = fopen(files(i).name,'r');
-    temp = textscan(fidI, '%s');
-    docWords = {};
-    for j=1:length(temp{1})
-        lowerCase = lower(temp{1});
-        if all(isstrprop(lowerCase{j},'alpha'))
-            docWords{end+1} = lowerCase{j};
-        end
-    end
-    words{i} = transpose(docWords);
-end
-
-
-% Build raw vocabulary dictionary
-vocab = containers.Map;
-for doc=1:N  %for every doc
-    for i=1:length(words{doc})  %for every word in a doc
-        word = words{doc}{i};
-        if ~isKey(vocab,word) %if word is not in voacb, add it
-            vocab(word) = 1;
-        else
-            vocab(word) = vocab(word) + 1;
-        end
-    end
-end
-
-%vocab.keys;
-%vocab.values;
-
-%Sort by frequency in descending order
-keys = vocab.keys;
-mvals = cell2mat(vocab.values);
-[vocabVals, sortIdx] = sort(mvals,'descend');
-vocabKeys = keys(sortIdx);
-
-if constraint > 0 && constraint < length(keys)
-    % count the other
-    other = 0;
-    for word=constraint+1:size(vocab,1)
-        other = other + vocabVals(word);
-    end
-
-    % trim the list
-    vocabKeys = vocabKeys(1:constraint);
-    vocabVals = vocabVals(1:constraint);
-    vocabKeys{end+1} = '<other>';
-    vocabVals(end+1) = other;
-end
-
-% index the vocabulary
-vocabIndex = 1:length(vocabKeys);
-
-%Save the vocabulary
-fileID = fopen(vocabFile,'w');
-for i=1:length(vocabKeys)
-    fprintf(fileID,'%s %d\n',vocabKeys{i},vocabIndex(i));
-end
-fclose(fileID);
-
-% optionally save the frequency file
-if freqFile ~= '@'
-    fileID = fopen(freqFile,'w');
-    for i=1:length(vocabKeys)
-        fprintf(fileID,'%s %d\n',vocabKeys{i},vocabVals(i));
-    end
-    fclose(fileID);
-end
-
-% construct the word lookup
-wordToIndex = containers.Map(vocabKeys,vocabIndex);
-
+walltime = 0;
+cpu_time = 0;
 
 % construct the document tensors
 for doc=1:N %for every doc

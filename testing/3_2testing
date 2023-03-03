@@ -1,0 +1,8 @@
+Building corpus with 600 word vocabulary.
+gazzah_arabic.txt
+kolda_multilinear.txt
+Averages calculated over 10 trials.
+Average elapsed time using HaCOO: 0.252058
+Average CPU time using HaCOO: 0.239000
+Average elapsed time using Tensor Toolbox: 3.273387
+Average CPU time using Tensor Toolbox: 4.463000
