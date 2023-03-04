@@ -1,0 +1,11 @@
+Building corpus with 600 word vocabulary.
+hamlet.txt
+julius.txt
+othello.txt
+romeo.txt
+tempest.txt
+Averages calculated over 10 trials.
+Average elapsed time using HaCOO: 5.273594
+Average CPU time using HaCOO: 6.189000
+Average elapsed time using Tensor Toolbox: 117.951711
+Average CPU time using Tensor Toolbox: 267.624000
