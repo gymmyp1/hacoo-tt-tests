@@ -3,12 +3,12 @@
 addpath /Users/meilicharles/Documents/MATLAB/hacoo-matlab/
 %addpath  C:\Users\MeiLi\OneDrive\Documents\MATLAB\hacoo-matlab
 
-files = ["uber.txt" "nell-2.txt" "enron.txt" "chicago.txt" "nips.txt" "lbnl-network.txt"];
+files = ["shuf_uber.txt" "shuf_nell-2.txt" "shuf_enron.txt" "shuf_chicago.txt" "shuf_nips.txt" "shuf_lbnl.txt"];
 
-NNZ = 1000;
-while NNZ < 10000000
+NNZ = 500000;
+while NNZ < 1000000
     for f=1:length(files)
-
+        
         %Get the first line using fgetl to figure out how many modes
         file = files(f)
         outFileName = strcat(string(NNZ),"frostt_results_",file);
@@ -50,5 +50,8 @@ while NNZ < 10000000
         fprintf(outFile,"Average CPU time using Tensor Toolbox: %f\n",tt_cpu);
 
     end
-    NNZ = NNZ * 10
+    if NNZ == 500000
+        break
+    end
+    %NNZ = NNZ * 10
 end

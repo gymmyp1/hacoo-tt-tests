@@ -16,7 +16,7 @@ fid = fopen(file,'rt');
 hdr = fgetl(fid);
 num = numel(regexp(hdr,' ','split'));
 
-if strcmp(file,"enron.txt") || strcmp(file,"nell-2.txt") || strcmp(file,"lbnl-network.txt")
+if strcmp(file,"shuf_enron.txt") || strcmp(file,"shuf_nell-2.txt") || strcmp(file,"shuf_lbnl.txt")
     fmt = repmat('%d',1,num-1); %to read files with decimal values (enron, nell-2,lbnl)
     fmt = strcat(fmt,'%f');
 else
@@ -43,7 +43,6 @@ else
     printf("Tensor format invalid.\n");
     return
 end
-
 
 %iterate over each idx and insert
 for i=1:nnz
