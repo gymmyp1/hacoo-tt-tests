@@ -4,17 +4,21 @@ addpath /Users/meilicharles/Documents/MATLAB/hacoo-matlab/
 %addpath  C:\Users\MeiLi\OneDrive\Documents\MATLAB\hacoo-matlab
 
 
-NUMTRIALS = 10;
+NUMTRIALS = 1;
+fileWrite = 1; %toggle writing to a file
 htns_elapsed = 0;
 tt_elapsed = 0;
 htns_cpu = 0;
 tt_cpu = 0;
 file = 'uber_hacoo.mat';
-fileID = fopen('uber_mttkrp_avg.txt','w');
-fprintf(fileID,"Reporting averages for MTTKRP for %s over all modes over %d trials.\n",file,NUMTRIALS);
+
+if fileWrite
+    fileID = fopen('4.5_uber_mttkrp_avg.txt','w');
+    fprintf(fileID,"Reporting averages for MTTKRP for %s over all modes over %d trials.\n",file,NUMTRIALS);
+end
 
 %Load the tensor
-T = load_htns(file);
+H = load_htns(file);
 
 %Set up Tensor Toolbox sptensor
 idx= T.all_subs();
@@ -42,19 +46,23 @@ U = Uinit;
 
 
 for trials = 1:NUMTRIALS
+    HS = sptensor(H.all_subs(),H.all_vals());
     for n = 1:T.nmodes
         %HaCOO tests
         tStart = cputime;
-        [walltime,cpu_time] = htns_coo_mttkrp(T,U,n); %<--matricize with respect to dimension n.
-        htns_elapsed = htns_elapsed + walltime;
-        htns_cpu = htns_cpu + cpu_time;
+        f = @() htns_coo_mttkrp(HS,U,n); %<--matricize with respect to dimension n.
+        htns_elapsed = htns_elapsed + timeit(f);
+        tEnd = cputime - tStart;
+        htns_cpu = htns_cpu + tEnd;
     end
 
 
     for n = 1:T.nmodes
-        [walltime,cput_time] = mttkrp(X,U,n); %<--matricize with respect to dimension i
-        tt_elapsed = tt_elapsed + walltime;
-        tt_cpu = tt_cpu + cpu_time;
+        tStart = cputime;
+        f = @() mttkrp(X,U,n); %<--matricize with respect to dimension i
+        tt_elapsed = tt_elapsed + timeit(f);
+        tEnd = cputime - tStart;
+        tt_cpu = tt_cpu + tEnd;
 
     end
 end
@@ -66,10 +74,11 @@ tt_elapsed = tt_elapsed/NUMTRIALS;
 htns_cpu = htns_cpu/NUMTRIALS;
 tt_cpu = tt_cpu/NUMTRIALS;
 
-fprintf(fileID,"Averages calculated over %d trials.\n",NUMTRIALS);
-fprintf(fileID,"Average elapsed time using HaCOO: %f\n",htns_elapsed);
-fprintf(fileID,"Average CPU time using HaCOO: %f\n",htns_cpu);
-fprintf(fileID,"Average elapsed time using Tensor Toolbox: %f\n",tt_elapsed);
-fprintf(fileID,"Average CPU time using Tensor Toolbox: %f\n",tt_cpu);
-
-fclose(fileID);
+if fileWrite
+    fprintf(fileID,"Averages calculated over %d trials.\n",NUMTRIALS);
+    fprintf(fileID,"Average elapsed time using HaCOO: %f\n",htns_elapsed);
+    fprintf(fileID,"Average CPU time using HaCOO: %f\n",htns_cpu);
+    fprintf(fileID,"Average elapsed time using Tensor Toolbox: %f\n",tt_elapsed);
+    fprintf(fileID,"Average CPU time using Tensor Toolbox: %f\n",tt_cpu);
+    fclose(fileID);
+end
