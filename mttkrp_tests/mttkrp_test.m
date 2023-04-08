@@ -16,12 +16,18 @@ htns_elapsed = 0;
 tt_elapsed = 0;
 htns_cpu = 0;
 tt_cpu = 0;
-<<<<<<< HEAD
 
+fileNameTrim = erase(file,".mat");
 outFileName = strcat("mttkrp_avg_",file);
+outFileName = strcat(outFileName,".txt");
 fileID = fopen(outFileName,'w');
 fprintf(fileID,"Reporting averages for MTTKRP for %s over all modes over %d trials.\n",file,NUMTRIALS);
 
+
+if fileWrite
+    fileID = fopen('4.5_uber_mttkrp_avg.txt','w');
+    fprintf(fileID,"Reporting averages for MTTKRP for %s over all modes over %d trials.\n",file,NUMTRIALS);
+end
 
 %Set up Tensor Toolbox sptensor
 table = readtable('uber.txt');
@@ -29,21 +35,6 @@ idx = table(:,1:end-1);
 vals = table(:,end);
 idx = table2array(idx);
 vals = table2array(vals);
-=======
-file = 'uber_hacoo.mat';
-
-if fileWrite
-    fileID = fopen('4.5_uber_mttkrp_avg.txt','w');
-    fprintf(fileID,"Reporting averages for MTTKRP for %s over all modes over %d trials.\n",file,NUMTRIALS);
-end
-
-%Load the tensor
-H = load_htns(file);
-
-%Set up Tensor Toolbox sptensor
-idx= T.all_subs();
-vals = T.all_vals();
->>>>>>> b0e4af59d2ca45f2f67061beb96a85b4f5f79ce4
 X = sptensor(idx,vals);
 
 %Set up U
@@ -67,23 +58,12 @@ U = Uinit;
 
 
 for trials = 1:NUMTRIALS
-<<<<<<< HEAD
     fprintf("Calculating HaCOO MTTKRP\n");
-=======
-    HS = sptensor(H.all_subs(),H.all_vals());
->>>>>>> b0e4af59d2ca45f2f67061beb96a85b4f5f79ce4
     for n = 1:T.nmodes
         fprintf("Trial %d",n);
-
         tStart = cputime;
-<<<<<<< HEAD
         f = @() htns_mttkrp(T,U,n); %<--matricize with respect to dimension n.
-        temp = timeit(f);
-        htns_elapsed = htns_elapsed + temp;
-=======
-        f = @() htns_coo_mttkrp(HS,U,n); %<--matricize with respect to dimension n.
         htns_elapsed = htns_elapsed + timeit(f);
->>>>>>> b0e4af59d2ca45f2f67061beb96a85b4f5f79ce4
         tEnd = cputime - tStart;
         htns_cpu = htns_cpu + tEnd;
     end
@@ -98,10 +78,7 @@ fprintf(fileID,"Average CPU time using HaCOO: %f\n",htns_cpu);
 for trials = 1:NUMTRIALS
     fprintf("Calculating COO MTTKRP\n");
     for n = 1:T.nmodes
-<<<<<<< HEAD
         fprintf("Trial %d",n);
-=======
->>>>>>> b0e4af59d2ca45f2f67061beb96a85b4f5f79ce4
         tStart = cputime;
         f = @() mttkrp(X,U,n); %<--matricize with respect to dimension i
         tt_elapsed = tt_elapsed + timeit(f);
@@ -111,22 +88,9 @@ for trials = 1:NUMTRIALS
     end
 end
 
-
 tt_elapsed = tt_elapsed/NUMTRIALS;
 tt_cpu = tt_cpu/NUMTRIALS;
-
-<<<<<<< HEAD
 fprintf(fileID,"Average elapsed time using Tensor Toolbox: %f\n",tt_elapsed);
 fprintf(fileID,"Average CPU time using Tensor Toolbox: %f\n",tt_cpu);
 
 fclose(fileID);
-=======
-if fileWrite
-    fprintf(fileID,"Averages calculated over %d trials.\n",NUMTRIALS);
-    fprintf(fileID,"Average elapsed time using HaCOO: %f\n",htns_elapsed);
-    fprintf(fileID,"Average CPU time using HaCOO: %f\n",htns_cpu);
-    fprintf(fileID,"Average elapsed time using Tensor Toolbox: %f\n",tt_elapsed);
-    fprintf(fileID,"Average CPU time using Tensor Toolbox: %f\n",tt_cpu);
-    fclose(fileID);
-end
->>>>>>> b0e4af59d2ca45f2f67061beb96a85b4f5f79ce4
