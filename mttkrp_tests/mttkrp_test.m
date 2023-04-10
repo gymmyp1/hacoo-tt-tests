@@ -1,6 +1,6 @@
 %File to measure performance of HaCOO's MTTKRP function.
 
-%addpath /Users/meilicharles/Documents/MATLAB/hacoo-matlab/
+addpath /Users/meilicharles/Documents/MATLAB/hacoo-matlab/
 %addpath  C:\Users\MeiLi\OneDrive\Documents\MATLAB\hacoo-matlab
 
 %file = "uber_trim.txt";
@@ -25,7 +25,8 @@ fprintf(fileID,"Reporting averages for MTTKRP for %s over all modes over %d tria
 
 
 if fileWrite
-    fileID = fopen('4.5_uber_mttkrp_avg.txt','w');
+    fileID = strcat(fileNameTrim, 'mttkrp_avg.txt');
+    fileID = fopen(fileID,'w');
     fprintf(fileID,"Reporting averages for MTTKRP for %s over all modes over %d trials.\n",file,NUMTRIALS);
 end
 
@@ -56,13 +57,15 @@ U = Uinit;
 %    error('Cell array is the wrong length');
 %end
 
+%get all subs and vals
+[idx,vals] = T.all_subsVals;
 
 for trials = 1:NUMTRIALS
     fprintf("Calculating HaCOO MTTKRP\n");
     for n = 1:T.nmodes
         fprintf("Trial %d",n);
         tStart = cputime;
-        f = @() htns_mttkrp(T,U,n); %<--matricize with respect to dimension n.
+        f = @() wip_htns_mttkrp(T,U,n,idx,vals); %<--matricize with respect to dimension n.
         htns_elapsed = htns_elapsed + timeit(f);
         tEnd = cputime - tStart;
         htns_cpu = htns_cpu + tEnd;
