@@ -6,11 +6,11 @@ addpath /Users/meilicharles/Documents/MATLAB/hacoo-matlab/
 %file = "uber_trim.txt";
 %T = read_htns(file);
 
-file = 'uber_hacoo.mat';
+file = 'chicago_hacoo.mat';
 %Load the tensor
 T = load_htns(file);
 
-NUMTRIALS = 1;
+NUMTRIALS = 10;
 fileWrite = 1; %toggle writing to a file
 htns_elapsed = 0;
 tt_elapsed = 0;
@@ -18,7 +18,7 @@ htns_cpu = 0;
 tt_cpu = 0;
 
 fileNameTrim = erase(file,".mat");
-outFileName = strcat("mttkrp_avg_",file);
+outFileName = strcat("_mttkrp_avg_",file);
 outFileName = strcat(outFileName,".txt");
 fileID = fopen(outFileName,'w');
 fprintf(fileID,"Reporting averages for MTTKRP for %s over all modes over %d trials.\n",file,NUMTRIALS);
@@ -31,7 +31,7 @@ if fileWrite
 end
 
 %Set up Tensor Toolbox sptensor
-table = readtable('uber.txt');
+table = readtable('chicago.txt');
 idx = table(:,1:end-1);
 vals = table(:,end);
 idx = table2array(idx);
@@ -63,7 +63,7 @@ U = Uinit;
 for trials = 1:NUMTRIALS
     fprintf("Calculating HaCOO MTTKRP\n");
     for n = 1:T.nmodes
-        fprintf("Trial %d",n);
+        fprintf("Trial %d\n",n);
         tStart = cputime;
         f = @() wip_htns_mttkrp(T,U,n,idx,vals); %<--matricize with respect to dimension n.
         htns_elapsed = htns_elapsed + timeit(f);
@@ -81,7 +81,7 @@ fprintf(fileID,"Average CPU time using HaCOO: %f\n",htns_cpu);
 for trials = 1:NUMTRIALS
     fprintf("Calculating COO MTTKRP\n");
     for n = 1:T.nmodes
-        fprintf("Trial %d",n);
+        fprintf("Trial %d\n",n);
         tStart = cputime;
         f = @() mttkrp(X,U,n); %<--matricize with respect to dimension i
         tt_elapsed = tt_elapsed + timeit(f);
