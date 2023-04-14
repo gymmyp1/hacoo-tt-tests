@@ -1,15 +1,13 @@
 %{
-Function to time how long it takes to build a COO tensor line by line
+Function to build a HaCOO/COO tensor line by line then export to COO file.
     Parameters:
         file - COO file to read from
         nnz - number of nonzeros to read (since doing this for all nnz takes
         a LONG time
         format - the format of tensor you want to build (sptensor,htensor)
-%}
-function [walltime, cpu_time] = time_read_frostt(file, nnz, format)
 
-walltime = 0;
-cpu_time = 0;
+%}
+function read_export(file, nnz,format)
 
 %Get the first line using fgetl to figure out how many modes
 fid = fopen(file,'rt');
@@ -24,8 +22,7 @@ else
 end
 
 frewind(fid); %put first line back
-%sizeA = [num Inf];
-sizeA = [num nnz]; %for larger tensors limit the number of nnz to read
+sizeA = [num nnz]; %for larger tensors, limit the number of nnz
 tdata = fscanf(fid,fmt,sizeA);
 tdata = tdata';
 fclose(fid);
@@ -36,27 +33,27 @@ vals = tdata(:,end);
 %Check if tensor format is valid
 if strcmp(format,"sptensor")
     fmtNum = 1;
-    tns = sptensor(ones(1,num-1));
+    coo_tns = sptensor(ones(1,num-1));
 elseif strcmp(format,"htensor")
     fmtNum = 2;
-    tns = htensor();
+    hacoo_tns = htensor();
 else
     printf("Tensor format invalid.\n");
     return
 end
 
-%iterate over each idx and insert
-for i=1:nnz
-    tic
-    tStart = cputime;
-
-    %If using COO format
+for i=1:size(idx,1)
+    %iterate over each idx and insert
     if fmtNum == 1
-        tns(idx(i,:)) = vals(i);
+        coo_tns(idx(i,:)) = vals(i); %if using COO format
     elseif fmtNum == 2 %If using HaCOO format
-        tns = tns.set(idx(i,:),vals(i));
+        hacoo_tns = hacoo_tns.set(idx(i,:),vals(i));
     end
-    walltime = walltime + toc;
-    tEnd = cputime - tStart;
-    cpu_time = cpu_time + tEnd;
+end
+
+if fmtNum == 2
+    %write HaCOO back to a COO file!
+    fileNameTrim = erase(file,".txt");
+    outfile = strcat(fileNameTrim, '_coo.txt');
+    write_coo(hacoo_tns,outfile);
 end

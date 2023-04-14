@@ -6,7 +6,8 @@ addpath /Users/meilicharles/Documents/MATLAB/hacoo-matlab/
 %file = "uber_trim.txt";
 %T = read_htns(file);
 
-file = 'chicago_hacoo.mat';
+file = 'uber_hacoo.mat';
+%file = 'enron_hacoo.mat';
 %Load the tensor
 T = load_htns(file);
 
@@ -17,21 +18,16 @@ tt_elapsed = 0;
 htns_cpu = 0;
 tt_cpu = 0;
 
-fileNameTrim = erase(file,".mat");
-outFileName = strcat("_mttkrp_avg_",file);
-outFileName = strcat(outFileName,".txt");
-fileID = fopen(outFileName,'w');
-fprintf(fileID,"Reporting averages for MTTKRP for %s over all modes over %d trials.\n",file,NUMTRIALS);
-
-
 if fileWrite
-    fileID = strcat(fileNameTrim, 'mttkrp_avg.txt');
+    fileNameTrim = erase(file,".mat");
+    fileID = strcat(fileNameTrim, '_mttkrp_avg.txt');
     fileID = fopen(fileID,'w');
     fprintf(fileID,"Reporting averages for MTTKRP for %s over all modes over %d trials.\n",file,NUMTRIALS);
 end
 
 %Set up Tensor Toolbox sptensor
-table = readtable('chicago.txt');
+table = readtable('uber.txt');
+%table = readtable('enron.txt');
 idx = table(:,1:end-1);
 vals = table(:,end);
 idx = table2array(idx);
@@ -43,7 +39,7 @@ N = T.nmodes;
 dimorder = 1:N;
 Uinit = cell(N,1);
 
-%this shold correspond to the number of components in the decomposition
+%this should correspond to the number of components in the decomposition
 col_sz = 10; 
 
 for n = 1:N
@@ -57,18 +53,13 @@ U = Uinit;
 %    error('Cell array is the wrong length');
 %end
 
-%get all subs and vals
-[idx,vals] = T.all_subsVals;
-
 for trials = 1:NUMTRIALS
     fprintf("Calculating HaCOO MTTKRP\n");
     for n = 1:T.nmodes
         fprintf("Trial %d\n",n);
-        tStart = cputime;
-        f = @() wip_htns_mttkrp(T,U,n,idx,vals); %<--matricize with respect to dimension n.
-        htns_elapsed = htns_elapsed + timeit(f);
-        tEnd = cputime - tStart;
-        htns_cpu = htns_cpu + tEnd;
+        [V,walltime,cpu_time] = htns_coo_mttkrp(T,U,n); %<--matricize with respect to dimension n.
+        htns_elapsed = htns_elapsed + walltime;
+        htns_cpu = htns_cpu + cpu_time;
     end
 end
 
@@ -82,11 +73,9 @@ for trials = 1:NUMTRIALS
     fprintf("Calculating COO MTTKRP\n");
     for n = 1:T.nmodes
         fprintf("Trial %d\n",n);
-        tStart = cputime;
-        f = @() mttkrp(X,U,n); %<--matricize with respect to dimension i
-        tt_elapsed = tt_elapsed + timeit(f);
-        tEnd = cputime - tStart;
-        tt_cpu = tt_cpu + tEnd;
+        [V,walltime,cpu_time] = mttkrp(X,U,n); %<--matricize with respect to dimension i
+        tt_elapsed = tt_elapsed + walltime;
+        tt_cpu = tt_cpu + cpu_time;
 
     end
 end
