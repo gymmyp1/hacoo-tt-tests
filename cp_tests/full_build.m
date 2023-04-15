@@ -8,11 +8,12 @@ addpath /Users/meilicharles/Documents/MATLAB/hacoo-matlab/
 %files = ["shuf_uber.txt" "shuf_nell-2.txt" "shuf_enron.txt" "shuf_chicago.txt" "shuf_nips.txt" "shuf_lbnl.txt"];
 %going to try this on only one tensor at a time...
 
-NUMTRIALS = 10;
-NNZ = 10000;
+NUMTRIALS = 1;
+NNZ = 1000;
 limit = 100000;
-file = 'uber.txt';
-shufFile = strcat('shuf_',file);
+file = 'shuf_uber.txt';
+cooFile = erase(file, ".txt");
+cooFile = strcat(cooFile,'_coo.txt');
 
 while NNZ < limit
 
@@ -27,16 +28,33 @@ while NNZ < limit
 
         fprintf(outFile,"Reading first %d nonzeros.\n",NNZ);
 
+        fprintf("HaCOO times:\n");
+        for i=1:NUMTRIALS
+            fprintf("Trial number: %d\n",i);
+            tic
+            tStart = cputime;
+            %build the tensor from scratch, write COO file
+            read_export(file, NNZ, "htensor");
+
+            %make a COO tensor from the file we just wrote
+            tns = read_coo(cooFile);
+
+            %run Toolbox's CP ALS algorithm with 50 components
+            cp_als(tns, 50);
+
+            htns_elapsed = htns_elapsed + toc;
+            tEnd = cputime - tStart;
+            htns_cpu = htns_cpu + tEnd;
+        end
+
         fprintf("COO times:\n")
         for i=1:NUMTRIALS
             fprintf("Trial number: %d\n",i);
             tic
             tStart = cputime;
             %build the tensor from scratch
-            read_export(file, NNZ, "sptensor");
+            coo_tns = read_export(file, NNZ, "sptensor");
 
-            %read the tensor and make it in MATLAB
-            coo_tns = read_coo(file);
             %run Toolbox's CP ALS algorithm with 50 components
             cp_als(coo_tns, 50);
 
@@ -44,25 +62,6 @@ while NNZ < limit
             tEnd = cputime - tStart;
             tt_cpu = tt_cpu + tEnd;
         end
-
-        fprintf("HaCOO times:\n");
-        for i=1:NUMTRIALS
-            fprintf("Trial number: %d\n",i);
-            tic
-            tStart = cputime;
-            %build the tensor from scratch
-            read_export(file, NNZ, "htensor");
-
-            %read the tensor and make it in MATLAB
-            hacoo_tns = read_coo(shufFile);
-            %run Toolbox's CP ALS algorithm with 50 components
-            cp_als(hacoo_tns, 50);
-
-            htns_elapsed = htns_elapsed + toc;
-            tEnd = cputime - tStart;
-            htns_cpu = htns_cpu + tEnd;
-        end
-
 
         htns_elapsed = htns_elapsed/NUMTRIALS;
         htns_cpu = htns_cpu/NUMTRIALS;
