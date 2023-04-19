@@ -1,7 +1,8 @@
 %{
  File: htns_doctnns.m
- Purpose: Report time required to update all document tensors (times
-    index insertion only).
+ Purpose: return built COO document tensor to perform CP
+ decomposition. If format is 'htensor', it builds the tensor in HaCOO
+ format then returns the tensor in COO format.
 
 Parameters:
     N - number of documents
@@ -11,17 +12,12 @@ Parameters:
     tns_format - which tensor format to use (sptensor or htensor)
     ngram - set the number of consecutive words when building tensor
     mat_save - write document tensors as .mat files
-    coo_save - write document tensors as COO files
 
 Returns:
     tns - built HaCOO or COO tensor
-    walltime - accumulated elapsed time required to build all document
-    tensors
-    cputime - accumulated cpu time required to build all document
-    tensors
 %}
 
-function [walltime,cpu_time] = doctns(N,words,wordToIndex,newFileNames,varargin)
+function tns = cp_doctns(N,words,wordToIndex,newFileNames,varargin)
 params = inputParser;
 params.addParameter('format','default',@isstring);
 params.addParameter('ngram',3,@isscalar);
@@ -119,6 +115,12 @@ for doc=1:N %for every doc
         % write the file
         fileID = newFileNames{doc};
         write_htns(tns,fileID,'-v7.3');
+    end
+
+    if fmtNum == 2
+        %convert the HaCOO tensor to COO to return
+        [subs,vals] =  t.all_subsVals();
+        t = sptensor(subs,vals);
     end
     
 end

@@ -1,5 +1,5 @@
-%Measure elapsed and cpu time required to build document tensors using
-%Tensor Toolbox sptensor and HaCOO htensor.
+%Measure elapsed and cpu time required to build document tensors 
+% & cp als using Tensor Toolbox and HaCOO.
 % Parameters:
 %       numTrials - number of trials to average over
 %       constraint - vocabulary constraint
@@ -8,7 +8,7 @@
 % Returns:
 %   nothing
 
-function time_build(varargin)
+function time_cp_build(varargin)
 %% Set up params
 params = inputParser;
 params.addParameter('numTrials',10,@isscalar);
@@ -42,29 +42,44 @@ fprintf("HaCOO Tests\n");
 for i=1:NUMTRIALS
     %HaCOO tests
     fprintf("Trial %d\n",i);
-    [walltime,cpu_time] = doctns(N,words,wordToIndex,newFileNames,'format',"htensor");
-    htns_elapsed = htns_elapsed + walltime;
-    htns_cpu = htns_cpu + cpu_time;
+    tic
+    tStart = cputime;
+    t = cp_doctns(N,words,wordToIndex,newFileNames,'format',"htensor");
+
+    %decompose tensor into rank-1 components
+    cp_als(t,50);
+
+    htns_elapsed = htns_elapsed + toc;
+    tEnd = cputime - tStart;
+    htns_cpu = htns_cpu + tEnd;
 end
+
+htns_elapsed = htns_elapsed/NUMTRIALS;
+htns_cpu = htns_cpu/NUMTRIALS;
+fprintf(fileID,"Averages calculated over %d trials to build and perform CP ALS decomposition.\n",NUMTRIALS);
+fprintf(fileID,"Average elapsed time using HaCOO: %f\n",htns_elapsed);
+fprintf(fileID,"Average CPU time using HaCOO: %f\n",htns_cpu);
 
 fprintf("COO Tests\n");
 for i=1:NUMTRIALS
     %COO tests
     fprintf("Trial %d\n",i);
-    [walltime,cpu_time] = doctns(N,words,wordToIndex,newFileNames,'format',"sptensor");
-    tt_elapsed = tt_elapsed + walltime;
-    tt_cpu = tt_cpu + cpu_time;
+    tic
+    tStart = cputime;
+    t = cp_doctns(N,words,wordToIndex,newFileNames,'format',"sptensor");
+
+    %decompose tensor into rank-1 components
+    cp_als(t,50);
+
+    tt_elapsed = tt_elapsed + toc;
+    tEnd = cputime - tStart;
+    tt_cpu = tt_cpu + tEnd;
+
 end
 
-htns_elapsed = htns_elapsed/NUMTRIALS;
 tt_elapsed = tt_elapsed/NUMTRIALS;
-
-htns_cpu = htns_cpu/NUMTRIALS;
 tt_cpu = tt_cpu/NUMTRIALS;
 
-fprintf(fileID,"Averages calculated over %d trials.\n",NUMTRIALS);
-fprintf(fileID,"Average elapsed time using HaCOO: %f\n",htns_elapsed);
-fprintf(fileID,"Average CPU time using HaCOO: %f\n",htns_cpu);
 fprintf(fileID,"Average elapsed time using Tensor Toolbox: %f\n",tt_elapsed);
 fprintf(fileID,"Average CPU time using Tensor Toolbox: %f\n",tt_cpu);
 

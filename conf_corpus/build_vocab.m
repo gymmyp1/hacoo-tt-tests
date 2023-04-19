@@ -8,6 +8,8 @@ Parameters:
     constraint - limit vocabulary to the n most frequent words
 
 Returns:
+    N - number of documents
+    words - array of unique words in entire corpus
     wordToIndex - indexed vocabulary for entire corpus
     newFileNames - file names for saving document tensors as .mat files
 %}

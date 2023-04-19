@@ -9,7 +9,8 @@ Function to build a HaCOO/COO tensor line by line then export to COO file.
         t = Built COO/HaCOO tensor
 
 %}
-function t = read_export(file, nnz,format)
+function t = read_export(file,nnz,format)
+file
 %Get the first line using fgetl to figure out how many modes
 fid = fopen(file,'rt');
 hdr = fgetl(fid);
