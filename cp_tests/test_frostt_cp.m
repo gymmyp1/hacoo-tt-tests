@@ -5,15 +5,20 @@ addpath /Users/meilicharles/Documents/MATLAB/hacoo-matlab/
 
 files = ["shuf_uber.txt" "shuf_nell-2.txt" "shuf_enron.txt" "shuf_chicago.txt" "shuf_nips.txt" "shuf_lbnl.txt"];
 
-NNZ = 500000;
-while NNZ < 1000000
+NUMTRIALS = 10;
+NNZ = 75000;
+limit = NNZ;
+
+while NNZ <= limit
     for f=1:length(files)
         
         %Get the first line using fgetl to figure out how many modes
         file = files(f)
-        outFileName = strcat(string(NNZ),"frostt_results_",file);
+        cooFile = erase(file, ".txt");
+        cooFile = strcat(cooFile,'_coo.txt');
+        outFileName = strcat(string(NNZ),"cp_results_",file);
         outFile = fopen(outFileName,'w');
-        NUMTRIALS = 10;
+        
         htns_elapsed = 0;
         htns_cpu = 0;
         tt_elapsed = 0;
@@ -27,6 +32,15 @@ while NNZ < 1000000
             [walltime,cpu_time] = time_read_frostt(file, NNZ, "sptensor");
             tt_elapsed = tt_elapsed + walltime;
             tt_cpu = tt_cpu + cpu_time;
+            
+            %make a COO tensor from the file we just wrote
+            [tns,walltime,cpu_time] = read_coo(cooFile);
+
+            %run Toolbox's CP ALS algorithm with 50 components
+            func = @()cp_als(tns, 50);
+            
+            tt_elapsed = tt_elapsed + timeit(func);
+            tt_cpu = tt_cpu + cpu_time;
         end
 
         fprintf("HaCOO times:\n");
@@ -35,6 +49,15 @@ while NNZ < 1000000
             [walltime,cpu_time] = time_read_frostt(file,NNZ,"htensor");
             htns_elapsed = htns_elapsed + walltime;
             htns_cpu = htns_cpu + cpu_time;
+
+            %make a COO tensor from the file we just wrote
+            [tns,walltime,cpu_time] = read_coo(cooFile);
+
+            %run Toolbox's CP ALS algorithm with 50 components
+            func = @()cp_als(tns, 50);
+            
+            tt_elapsed = tt_elapsed + timeit(func);
+            tt_cpu = tt_cpu + cpu_time;
         end
 
 
@@ -50,8 +73,5 @@ while NNZ < 1000000
         fprintf(outFile,"Average CPU time using Tensor Toolbox: %f\n",tt_cpu);
 
     end
-    if NNZ == 500000
-        break
-    end
-    %NNZ = NNZ * 10
+    NNZ = NNZ * 10
 end
