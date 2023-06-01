@@ -35,9 +35,10 @@ words = cell(N, 1);
 
 for i = 1:length(files)
     fid1 = files(i).name;
-    newFileNames{i} = replace(fid1,'txt','mat');
+    newFileNames{i} = replace(fid1,'.txt','_coo.txt');
     fidI = fopen(files(i).name,'r');
     temp = textscan(fidI, '%s');
+    temp{1} = erasePunctuation(temp{1}); %requires MATLAB Text Analytics Toolbox
     docWords = {};
     for j=1:length(temp{1})
         lowerCase = lower(temp{1});
@@ -47,7 +48,6 @@ for i = 1:length(files)
     end
     words{i} = transpose(docWords);
 end
-
 
 % Build raw vocabulary dictionary
 vocab = containers.Map;

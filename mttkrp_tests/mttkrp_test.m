@@ -3,15 +3,16 @@
 addpath /Users/meilicharles/Documents/MATLAB/hacoo-matlab/
 %addpath  C:\Users\MeiLi\OneDrive\Documents\MATLAB\hacoo-matlab
 
-%file = "uber_trim.txt";
-%T = read_htns(file);
+file = "uber.txt";
+T = read_htns(file);
 
-file = 'uber_hacoo.mat';
+%will need to create new mat files since table struct changed
+%file = 'uber_hacoo.mat';
 %file = 'enron_hacoo.mat';
 %Load the tensor
-T = load_htns(file);
+%T = load_htns(file);
 
-NUMTRIALS = 10;
+NUMTRIALS = 1;
 fileWrite = 1; %toggle writing to a file
 htns_elapsed = 0;
 tt_elapsed = 0;
@@ -27,7 +28,6 @@ end
 
 %Set up Tensor Toolbox sptensor
 table = readtable('uber.txt');
-%table = readtable('enron.txt');
 idx = table(:,1:end-1);
 vals = table(:,end);
 idx = table2array(idx);
@@ -55,11 +55,14 @@ U = Uinit;
 
 for trials = 1:NUMTRIALS
     fprintf("Calculating HaCOO MTTKRP\n");
+    fprintf("Trial %d\n",n);
     for n = 1:T.nmodes
-        fprintf("Trial %d\n",n);
-        [V,walltime,cpu_time] = htns_coo_mttkrp(T,U,n); %<--matricize with respect to dimension n.
-        htns_elapsed = htns_elapsed + walltime;
-        htns_cpu = htns_cpu + cpu_time;
+        fprintf("Calc over mode %d\n",n);
+        tStart = cputime;
+        f = @() spv_htns_mttkrp(T,U,n); %<--matricize with respect to dimension n.
+        htns_elapsed = htns_elapsed + timeit(f);
+        tEnd = cputime - tStart;
+        htns_cpu = htns_cpu + tEnd;
     end
 end
 
@@ -71,11 +74,14 @@ fprintf(fileID,"Average CPU time using HaCOO: %f\n",htns_cpu);
 
 for trials = 1:NUMTRIALS
     fprintf("Calculating COO MTTKRP\n");
+    fprintf("Trial %d\n",n);
     for n = 1:T.nmodes
-        fprintf("Trial %d\n",n);
-        [V,walltime,cpu_time] = mttkrp(X,U,n); %<--matricize with respect to dimension i
-        tt_elapsed = tt_elapsed + walltime;
-        tt_cpu = tt_cpu + cpu_time;
+        fprintf("Calc over mode %d\n",n);
+        tStart = cputime;
+        f = @() mttkrp(X,U,n); %<--matricize with respect to dimension i
+        tt_elapsed = tt_elapsed + timeit(f);
+        tEnd = cputime - tStart;
+        tt_cpu = tt_cpu + tEnd;
 
     end
 end

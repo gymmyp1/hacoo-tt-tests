@@ -1,5 +1,5 @@
 %{
- File: htns_doctnns.m
+ File: htns_doctns.m
  Purpose: Report time required to update all document tensors (times
     index insertion only).
 
@@ -78,18 +78,8 @@ for doc=1:N %for every doc
 
         %If using HaCOO format
         if fmtNum == 2
-            % accumulate the count
-            %Search if index already exists in tensor
-            [k,j] = tns.search(idx);
-
-            if j == -1 %if it doesnt exist yet, set new entry w/ value of 1
-                tns.table{k} = {idx 1};
-            else
-                %else, update the entry's val
-                tns.table{k}{j,2} = tns.table{k}{j,2} + 1;
-                %fprintf('Existing entry has been updated.\n')
-            
-            end
+            % build using HaCOO format
+            tns = tns.set(idx,1,'update',1);
 
         %If using COO format
         elseif fmtNum == 1
