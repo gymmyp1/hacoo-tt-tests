@@ -1,19 +1,15 @@
-%File to measure performance of COO using basic SPV MTTKRP.
+%File to measure performance of COO using basic SPV MTTKRP. This takes an
+%extremely long time, so this was avandoned.
 
 addpath /Users/meilicharles/Documents/MATLAB/hacoo-matlab/
 %addpath  C:\Users\MeiLi\OneDrive\Documents\MATLAB\hacoo-matlab
 
 %Set up Tensor Toolbox sptensor
-file = "uber.txt";
-table = readtable(file);
-idx = table(:,1:end-1);
-vals = table(:,end);
-idx = table2array(idx);
-vals = table2array(vals);
-X = sptensor(idx,vals);
+X = read_coo("uber.txt");
 
 NUMTRIALS = 1;
 fileWrite = 1; %toggle writing to a file
+time_mode = 1;
 htns_elapsed = 0;
 tt_elapsed = 0;
 htns_cpu = 0;

@@ -1,5 +1,5 @@
 %{
-Function to build a HaCOO/COO tensor line by line then export to COO file.
+Function to build a HaCOO/COO tensor line by line.
     Parameters:
         file - COO file to read from
         nnz - number of nonzeros to read (since doing this for all nnz takes
@@ -9,8 +9,8 @@ Function to build a HaCOO/COO tensor line by line then export to COO file.
         t - Built COO/HaCOO tensor
 
 %}
-function t = read_export(file,nnz,format)
-file
+function t = build_tensor(file,nnz,format)
+
 %Get the first line using fgetl to figure out how many modes
 fid = fopen(file,'rt');
 hdr = fgetl(fid);
@@ -44,7 +44,6 @@ else
     return
 end
 
-size(idx,1)
 for i=1:size(idx,1)
     %iterate over each idx and insert
     if fmtNum == 1
@@ -52,12 +51,4 @@ for i=1:size(idx,1)
     elseif fmtNum == 2 %If using HaCOO format
         t = t.set(idx(i,:),vals(i));
     end
-end
-
-if fmtNum == 2
-    %write HaCOO back to a COO file!
-    fprintf("Writing HaCOO tensor to COO tensor.\n");
-    fileNameTrim = erase(file,".txt");
-    outfile = strcat(fileNameTrim, '_coo.txt')
-    write_coo(t,outfile);
 end

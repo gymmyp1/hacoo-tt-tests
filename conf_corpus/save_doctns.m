@@ -106,7 +106,7 @@ for doc=1:N %for every doc
 
     % count the ngrams
     while i < limit+2
-        gram = curr_doc(i:i+ngram-1)
+        gram = curr_doc(i:i+ngram-1);
         idx = zeros(1,ngram);
 
         % build the index
@@ -125,12 +125,9 @@ for doc=1:N %for every doc
         i = i+1;
     end
 
-    %tns.display_htns
-    %tns.table{126}
+    % write the file
     fprintf("Writing file: ");
     newFileNames{doc}
-
-    % write the file
     fileID = newFileNames{doc};
     write_coo(tns,fileID);
 

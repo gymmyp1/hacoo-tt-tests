@@ -10,7 +10,7 @@ Parameters:
     newFileNames - file names for saving document tensors as .mat files
     tns_format - which tensor format to use (sptensor or htensor)
     ngram - set the number of consecutive words when building tensor
-    mat_save - write document tensors as .mat files
+    mat_save - write HaCOO document tensors as .mat files
     coo_save - write document tensors as COO files
 
 Returns:
@@ -25,7 +25,8 @@ function [walltime,cpu_time] = doctns(N,words,wordToIndex,newFileNames,varargin)
 params = inputParser;
 params.addParameter('format','default',@isstring);
 params.addParameter('ngram',3,@isscalar);
-params.addParameter('mat_save',0,@isscalar);
+params.addParameter('hacoo_save',0,@isscalar);
+params.addParameter('coo_save',0,@isscalar);
 params.parse(varargin{:});
 
 %% Copy from params object
@@ -102,13 +103,18 @@ for doc=1:N %for every doc
         i = i+1;
     end
 
-    if mat_save
+    if hacoo_save
         %fprintf("Writing file: ");
         %newFileNames{doc}
         
         % write the file
         fileID = newFileNames{doc};
         write_htns(tns,fileID,'-v7.3');
+    end
+
+    if coo_save
+        fileID = newFileNames{doc};
+        write_coo(tns,fileID);
     end
     
 end
