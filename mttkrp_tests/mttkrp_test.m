@@ -4,9 +4,9 @@
 addpath /Users/meilicharles/Documents/MATLAB/hacoo-matlab/
 
 %file to write results to
-outFileName = "chicago_mttkrp.txt";
+outFileName = "nell_mttkrp.txt";
 
-file = "chicago.txt";
+file = "nell.txt";
 
 fprintf("Initializing Tensor Toolbox sptensor...\n");
 %set up Tensor Toolbox sptensor

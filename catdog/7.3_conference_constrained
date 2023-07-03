@@ -1,0 +1,8 @@
+Building corpus with 600 word vocabulary.
+cat.txt
+dog.txt
+Averages calculated over 1 trials.
+Average elapsed time using HaCOO: 0.049936
+Average CPU time using HaCOO: 0.060000
+Average elapsed time using Tensor Toolbox: 0.081120
+Average CPU time using Tensor Toolbox: 0.070000
