@@ -4,9 +4,9 @@
 addpath /Users/meilicharles/Documents/MATLAB/hacoo-matlab/
 
 %file to write results to
-outFileName = "uber_mttkrp.txt";
+outFileName = "chicago_mttkrp.txt";
 
-file = "uber_trim.txt";
+file = "chicago.txt";
 
 fprintf("Initializing Tensor Toolbox sptensor...\n");
 %set up Tensor Toolbox sptensor
@@ -55,7 +55,9 @@ end
 
 fprintf("Calculating Tensor Toolbox mttkrp...\n")
 for i = 1:NUMTRIALS
+    fprintf("Trial %d\n",i);
     for n=1:N
+        fprintf("MTTKRP over mode %d\n",n);
         f = @() mttkrp(X,U,n); %<--matricize with respect to dimension i.
         tStart = cputime;
         t = timeit(f);

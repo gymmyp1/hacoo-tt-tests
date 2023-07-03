@@ -1,5 +1,5 @@
 %{
- File: htns_doctns.m
+ File: doctns.m
  Purpose: Report time required to update all document tensors (times
     index insertion only).
 
@@ -21,7 +21,7 @@ Returns:
     tensors
 %}
 
-function [walltime,cpu_time] = doctns(N,words,wordToIndex,newFileNames,varargin)
+function [tns,walltime,cpu_time] = doctns(N,words,wordToIndex,newFileNames,varargin)
 params = inputParser;
 params.addParameter('format','default',@isstring);
 params.addParameter('ngram',3,@isscalar);
@@ -32,8 +32,9 @@ params.parse(varargin{:});
 %% Copy from params object
 format = params.Results.format;
 ngram = params.Results.ngram;
-mat_save = params.Results.mat_save;
-%%
+hacoo_save = params.Results.hacoo_save;
+coo_save = params.Results.coo_save;
+%
 
 %Check if tensor format is valid
 if strcmp(format,"sptensor") || strcmp(format,"coo")

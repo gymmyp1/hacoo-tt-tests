@@ -42,14 +42,17 @@ fprintf("HaCOO Tests\n");
 for i=1:NUMTRIALS
     %HaCOO tests
     fprintf("Trial %d\n",i);
-    tic
+    %tic
+    %tStart = cputime;
+    [t,walltime,cpu_time] = doctns(N,words,wordToIndex,newFileNames,'format',"htensor");
+    htns_elapsed = htns_elapsed + walltime;
+    htns_cpu = htns_cpu + cpu_time;
+
     tStart = cputime;
-    t = cp_doctns(N,words,wordToIndex,newFileNames,'format',"htensor");
-
     %decompose tensor into rank-1 components
-    cp_als(t,50);
+    f = @() htns_cp_als2(t,50);
 
-    htns_elapsed = htns_elapsed + toc;
+    htns_elapsed = htns_elapsed + timeit(f);
     tEnd = cputime - tStart;
     htns_cpu = htns_cpu + tEnd;
 end
@@ -64,14 +67,17 @@ fprintf("COO Tests\n");
 for i=1:NUMTRIALS
     %COO tests
     fprintf("Trial %d\n",i);
-    tic
+    %tic
+    %tStart = cputime;
+    [t,walltime,cpu_time] = doctns(N,words,wordToIndex,newFileNames,'format',"sptensor");
+    tt_elapsed = tt_elapsed + walltime;
+    tt_cpu = tt_cpu + cpu_time;
+
     tStart = cputime;
-    t = cp_doctns(N,words,wordToIndex,newFileNames,'format',"sptensor");
 
     %decompose tensor into rank-1 components
-    cp_als(t,50);
-
-    tt_elapsed = tt_elapsed + toc;
+    f = @() cp_als(t,50);
+    tt_elapsed = tt_elapsed + timeit(f);
     tEnd = cputime - tStart;
     tt_cpu = tt_cpu + tEnd;
 

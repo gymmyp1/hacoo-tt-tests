@@ -1,5 +1,5 @@
 %{
- File: htns_doctnns.m
+ File: cp_doctns.m
  Purpose: return built COO document tensor to perform CP
  decomposition. If format is 'htensor', it builds the tensor in HaCOO
  format then returns the tensor in COO format.
@@ -108,8 +108,8 @@ for doc=1:N %for every doc
 
     if fmtNum == 2
         %convert the HaCOO tensor to COO to return
-        [subs,vals] =  t.all_subsVals();
-        t = sptensor(subs,vals);
+        [subs,vals] =  tns.all_subsVals();
+        tns = sptensor(subs,vals);
     end
     
 end
